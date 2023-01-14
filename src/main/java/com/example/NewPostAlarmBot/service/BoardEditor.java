@@ -143,8 +143,8 @@ public class BoardEditor {
                     break;
                 }
             }
-            System.out.println("title class: " + board.title);
-            System.out.println("num class: " + board.num);
+            //System.out.println("title class: " + board.title);
+            //System.out.println("num class: " + board.num);
         }
 
         titleList = getElem(board.title);
@@ -172,11 +172,11 @@ public class BoardEditor {
                     titListWithoutNotice.add(titleList.get(i));
         }
 
-        System.out.println(url);
-        System.out.println("topTitle: " + titListWithoutNotice.get(0));
-        System.out.println("titleList size: "+titleList.size());
-        System.out.println("titListWithoutNotice size: " + titListWithoutNotice.size());
-        System.out.println("ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ\n");
+//        System.out.println(url);
+//        System.out.println("topTitle: " + titListWithoutNotice.get(0));
+//        System.out.println("titleList size: "+titleList.size());
+//        System.out.println("titListWithoutNotice size: " + titListWithoutNotice.size());
+//        System.out.println("ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ\n");
 //        for(String t:titListWithoutNotice) System.out.println(t);
 //        System.out.println(numList + " " + numList.size());
 

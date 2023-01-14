@@ -19,6 +19,7 @@ public class DomainId {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private Long chatId;
     private String url;
     private String urlTitle;

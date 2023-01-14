@@ -2,6 +2,7 @@ package com.example.NewPostAlarmBot.Telegram;
 
 import com.example.NewPostAlarmBot.repository.JpaDomainRepo;
 import com.example.NewPostAlarmBot.service.SchedulerService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
@@ -17,10 +18,13 @@ public class TelegramConfig {
         this.jpaDomainRepo = jpaDomainRepo;
     }
 
+    @Value("${bot_token}")
+    private String botToken;
+
     @Bean
     public TelegramBotsApi TelegramBotRegisterConfig(SchedulerService schedulerService) throws TelegramApiException {
 
-        String botToken = "5765206121:AAH21VfSPgLSVtNZCvAQLr2ssqvbdP8GZiE";
+
 
         TelegramMessageSender telegramMessageSender = new TelegramMessageSender(botToken);
         TelegramMessageReceiverHandler telegramMessageReceiverHandler = new TelegramMessageReceiverHandler(telegramMessageSender, schedulerService, jpaDomainRepo);
