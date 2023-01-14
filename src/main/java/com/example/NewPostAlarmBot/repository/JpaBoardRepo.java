@@ -4,9 +4,12 @@ import com.example.NewPostAlarmBot.domain.Board;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface JpaBoardRepo extends JpaRepository<Board, Long> {
 
     Board findByUrl(String url);
+    List<Board> findAll();
     Board save(Board board);
 }

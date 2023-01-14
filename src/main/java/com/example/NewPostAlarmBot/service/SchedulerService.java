@@ -55,6 +55,7 @@ public class SchedulerService{
     @Scheduled(fixedDelay = 5000)
     public void job(){
         List<DomainId> urlList = jpaDomainRepo.findAll();
+        //System.out.println("jpaDomainRepo size: "+jpaDomainRepo.findAll().size());
 
         if(urlList == null || urlList.size() == 0) return;
 

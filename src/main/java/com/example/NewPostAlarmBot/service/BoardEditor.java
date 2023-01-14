@@ -53,6 +53,10 @@ public class BoardEditor {
             crawl.setUrlTitle(driver.getTitle());
             crawlMap.put(url, crawl);
         }
+        //System.out.println("jpaBoardRepo size: "+jpaBoardRepo.findAll().size());
+        //System.out.println("jpaCrawlRepo size: "+jpaCrawlRepo.findAll().size());
+
+
     }
 
     // not use
