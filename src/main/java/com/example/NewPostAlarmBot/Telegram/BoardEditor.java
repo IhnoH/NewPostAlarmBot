@@ -40,7 +40,7 @@ public class BoardEditor {
 
         WebDriverManager.chromedriver().setup();
         ChromeOptions options = new ChromeOptions();
-        //options.addArguments("headless"); // GUI 없이 실행
+        options.addArguments("headless"); // GUI 없이 실행
         options.addArguments("disable-popup-blocking");  //팝업 무시
         options.addArguments("disable-defult-apps");  //기본앱 사용 안함 ex)인터넷익스플로러, 엣지 등 기본앱 사용 x
         driver = new ChromeDriver(options);
