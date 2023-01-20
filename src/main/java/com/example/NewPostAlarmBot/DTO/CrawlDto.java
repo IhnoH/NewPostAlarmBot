@@ -11,15 +11,15 @@ import lombok.Setter;
 @Data
 @NoArgsConstructor
 public class CrawlDto {
-    private String url;
-    private String idName;
-    private String pwName;
-    private int boardSize;
-    private String newTitle;
-    private String topTitle;
-    private String urlTitle;
-    private String titleClass;
-    private String numClass;
+    public String url;
+    public String idName;
+    public String pwName;
+    public int boardSize;
+    public String newTitle;
+    public String topTitle;
+    public String urlTitle;
+    public String titleClass;
+    public String numClass;
 
     public CrawlDto(Crawl entity){
         this.url = entity.getUrl();

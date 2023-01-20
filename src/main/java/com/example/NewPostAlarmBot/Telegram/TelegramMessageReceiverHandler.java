@@ -47,8 +47,8 @@ public class TelegramMessageReceiverHandler {
             if (text.indexOf("/") == 0) {
 
                 List<String> tmp = Arrays.asList(text.split(" ", 2));
-                System.out.println(tmp.size());
-                System.out.println(tmp);
+//                System.out.println(tmp.size());
+//                System.out.println(tmp);
                 command = tmp.get(0);
                 //System.out.println(tmp[1]);
 
@@ -58,7 +58,7 @@ public class TelegramMessageReceiverHandler {
                 if ("/start".equals(command)) {
                     responseText = "/url {새 글 알림을 받고 싶은 url 주소}\n" +
                             "/stop {알림 받는 것을 중지하고 싶은 url 주소}\n" +
-                            "/list 알림 받고 있는 url 주소 리스트 제공";
+                            "/list 알림받고 있는 url 주소 리스트를 제공합니다.";
                     //sendMsg(setMsg(chatId, responseText));
                 } else if ("/url".equals(command)) {
                     if (argument == null) {

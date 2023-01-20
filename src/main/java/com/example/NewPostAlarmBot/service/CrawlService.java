@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Optional;
 
 @Transactional
 @RequiredArgsConstructor
@@ -17,7 +18,11 @@ public class CrawlService {
     private final CrawlRepo crawlRepo;
 
     public void save(CrawlDto dto){
-        crawlRepo.save(dto.toEntity());
+        Optional<Crawl> b = crawlRepo.findByUrl(dto.url);
+        if(b.isPresent())
+            update(dto.url, dto);
+        else
+            crawlRepo.save(dto.toEntity());
     }
 
     public String update(String url, CrawlDto dto){

@@ -3,6 +3,7 @@ package com.example.NewPostAlarmBot.service;
 
 import com.example.NewPostAlarmBot.DTO.CrawlDto;
 import com.example.NewPostAlarmBot.DTO.DomainInfoDto;
+import com.example.NewPostAlarmBot.domain.Crawl;
 import com.example.NewPostAlarmBot.domain.DomainInfo;
 import com.example.NewPostAlarmBot.repository.DomainInfoRepo;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Transactional
 @RequiredArgsConstructor
@@ -19,7 +21,11 @@ public class DomainInfoService {
     private final DomainInfoRepo domainInfoRepo;
 
     public void save(DomainInfoDto dto){
-        domainInfoRepo.save(dto.toEntity());
+        Optional<DomainInfo> b = domainInfoRepo.findByUrl(dto.url);
+        if(b.isPresent())
+            update(dto.url, dto);
+        else
+            domainInfoRepo.save(dto.toEntity());
     }
 
     public String update(String url, DomainInfoDto dto){

@@ -40,7 +40,7 @@ public class BoardEditor {
 
         WebDriverManager.chromedriver().setup();
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("headless"); // GUI 없이 실행
+        //options.addArguments("headless"); // GUI 없이 실행
         options.addArguments("disable-popup-blocking");  //팝업 무시
         options.addArguments("disable-defult-apps");  //기본앱 사용 안함 ex)인터넷익스플로러, 엣지 등 기본앱 사용 x
         driver = new ChromeDriver(options);
@@ -58,6 +58,8 @@ public class BoardEditor {
             crawlDto.setNumClass("");
             crawlDto.setUrlTitle(driver.getTitle());
             crawlMap.put(url, crawlDto);
+//            System.out.println("BoardRepo size: " + boardService.findAll().size());
+//            for(BoardDto b: boardService.findAll()) System.out.println(b.url);
         }
     }
 
@@ -190,13 +192,27 @@ public class BoardEditor {
         while(doc.contains("<!--") && doc.contains("-->"))
             doc = doc.replace(doc.substring(doc.indexOf("<!--"), doc.indexOf("-->")+"-->".length()), "");
 
-        //String tag = "";
-        if(doc.contains("<tbody") && doc.contains("</tbody>"))
-            doc = doc.substring(doc.indexOf("<tbody"), doc.indexOf("</tbody>")+("</tbody>").length());
+
+        // 게시글이 존재할 가장 유력한 태그 장소 tbody
+        if(doc.contains("<tbody") && doc.contains("</tbody>")) {
+            int tbodyNum = countStr(doc, "<tbody");
+            if(tbodyNum == 1)
+                doc = doc.substring(doc.indexOf("<tbody"), doc.indexOf("</tbody>") + ("</tbody>").length());
+            else{
+                String docTmp = "";
+                String docTmp2 = "";
+                for(int i = 0;i < tbodyNum;i++){
+                    docTmp2 = doc.substring(doc.indexOf("<tbody"), doc.indexOf("</tbody>") + ("</tbody>").length());
+                    if(docTmp.length() < docTmp2.length()) docTmp = docTmp2;
+                    doc = doc.replace(docTmp2, "");
+                }
+                doc = docTmp;
+            }
+        }
         else doc = doc.substring(doc.indexOf("<body"), doc.indexOf("</body>")+("</body>").length());
 
 //        System.out.println("\nㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ\n");
-//        System.out.println(doc2);
+//        System.out.println(doc);
 //        System.out.println("\nㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ\n");
 
 
@@ -285,8 +301,9 @@ public class BoardEditor {
             freqOfFreq.add(freq);
         }
 
-        //System.out.println(classFreq);
-        //System.out.println(freqOfFreq + ", " + Arrays.toString(freqSet));
+//        System.out.println(classNameList);
+//        System.out.println(classFreq);
+//        System.out.println(freqOfFreq + ", " + Arrays.toString(freqSet));
 
         int maxFreq = freqSet[freqOfFreq.indexOf(Collections.max(freqOfFreq))]; // 클래스 이름 빈도의 빈도의 최대값
         //int secFreq = freqSet[freqOfFreq.indexOf(s)];
@@ -350,8 +367,21 @@ public class BoardEditor {
         String doc = driver.getPageSource();
         List<String> elemList = new ArrayList<>();
 
-        if(doc.contains("<tbody") && doc.contains("</tbody>"))
-            doc = doc.substring(doc.indexOf("<tbody"), doc.indexOf("</tbody>")+("</tbody>").length());
+        if(doc.contains("<tbody") && doc.contains("</tbody>")) {
+            int tbodyNum = countStr(doc, "<tbody");
+            if(tbodyNum == 1)
+                doc = doc.substring(doc.indexOf("<tbody"), doc.indexOf("</tbody>") + ("</tbody>").length());
+            else{
+                String docTmp = "";
+                String docTmp2 = "";
+                for(int i = 0;i < tbodyNum;i++){
+                    docTmp2 = doc.substring(doc.indexOf("<tbody"), doc.indexOf("</tbody>") + ("</tbody>").length());
+                    if(docTmp.length() < docTmp2.length()) docTmp = docTmp2;
+                    doc = doc.replace(docTmp2, "");
+                }
+                doc = docTmp;
+            }
+        }
         else doc = doc.substring(doc.indexOf("<body"), doc.indexOf("</body>")+("</body>").length());
 
         String[] tmp = doc.split(clss+"\">");
@@ -572,7 +602,7 @@ public class BoardEditor {
             }
         }
 
-        System.out.println(idName + " " + pwName);
+//        System.out.println(idName + " " + pwName);
 
         return false;
     }
@@ -655,5 +685,10 @@ public class BoardEditor {
         }
         return tmp;
     }
+
+    public int countStr(String doc, String str){
+        return (int) (doc.length() - doc.replace(str, "").length())/str.length();
+    }
+
 
 }

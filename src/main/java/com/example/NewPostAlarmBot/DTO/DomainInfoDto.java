@@ -11,11 +11,11 @@ import lombok.Setter;
 @Data
 @NoArgsConstructor
 public class DomainInfoDto {
-    private Long chatId;
-    private String url;
-    private String urlTitle;
-    private String loginId;
-    private String loginPw;
+    public Long chatId;
+    public String url;
+    public String urlTitle;
+    public String loginId;
+    public String loginPw;
 
     public DomainInfoDto(DomainInfo entity){
         this.url = entity.getUrl();
