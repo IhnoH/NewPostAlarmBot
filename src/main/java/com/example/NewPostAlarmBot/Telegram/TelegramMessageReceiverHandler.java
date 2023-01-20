@@ -1,9 +1,7 @@
 package com.example.NewPostAlarmBot.Telegram;
 
-import com.example.NewPostAlarmBot.domain.DomainId;
-import com.example.NewPostAlarmBot.repository.JpaDomainRepo;
-import com.example.NewPostAlarmBot.service.BoardEditor;
-import com.example.NewPostAlarmBot.service.SchedulerService;
+import com.example.NewPostAlarmBot.domain.DomainInfo;
+import com.example.NewPostAlarmBot.repository.DomainInfoRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -26,7 +24,7 @@ public class TelegramMessageReceiverHandler {
     @Autowired
     private final SchedulerService schedulerService;
     @Autowired
-    private final JpaDomainRepo jpaDomainRepo;
+    private final DomainInfoRepo jpaDomainRepo;
 
 
     private Map<String, ScheduledFuture<?>> jobMap = new ConcurrentHashMap<>();
@@ -69,21 +67,21 @@ public class TelegramMessageReceiverHandler {
                         return;
                     }
 
-                    DomainId d = new DomainId();
+                    DomainInfo d = new DomainInfo();
                     d.setUrl(argument);
                     d.setChatId(chatId);
                     jpaDomainRepo.save(d);
                     return;
 
                 } else if ("/list".equals(command)) {
-                    List<DomainId> urlList = jpaDomainRepo.findAll();
+                    List<DomainInfo> urlList = jpaDomainRepo.findAll();
                     responseText = "URL List";
-                    for(DomainId d: urlList){
+                    for(DomainInfo d: urlList){
                         responseText = responseText + "\n" + d.getUrl();
                     }
 
                 } else if ("/stop".equals(command)){
-                    Optional<DomainId> d =  jpaDomainRepo.findByUrl(argument);
+                    Optional<DomainInfo> d =  jpaDomainRepo.findByUrl(argument);
                     if (d.isEmpty()) responseText = "잘못된 url입니다.";
                     else{
                         jpaDomainRepo.delete(d.get());
@@ -94,7 +92,7 @@ public class TelegramMessageReceiverHandler {
                     List<String> arg = Arrays.asList(argument.split(" "));
 
                     if(arg.size() == 3){
-                        DomainId d = new DomainId();
+                        DomainInfo d = new DomainInfo();
                         d.setUrl(arg.get(0));
                         d.setChatId(chatId);
                         d.setLoginId(arg.get(1));

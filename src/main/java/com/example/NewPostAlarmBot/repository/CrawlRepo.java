@@ -13,12 +13,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface JpaCrawlRepo extends JpaRepository<Crawl, String> {
+public interface CrawlRepo extends JpaRepository<Crawl, Long> {
 
     Optional<Crawl> findByUrl(String url);
-    Optional<Crawl> findById(int id);
-
-    @NotNull
+    Optional<Crawl> findById(Long id);
     Crawl save(Crawl crawl);
 
     List<Crawl> findAll();

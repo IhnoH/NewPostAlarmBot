@@ -26,7 +26,8 @@ dependencies {
 	implementation 'org.apache.commons:commons-lang3' // util 을 사용 하기 위해
 	implementation 'com.google.code.gson:gson:2.8.5' // json 형식으로 편리하게 변환 하기 위해
 	implementation 'org.springframework.boot:spring-boot-starter-quartz'
-	implementation 'org.projectlombok:lombok'
+	compileOnly 'org.projectlombok:lombok:1.18.12'
+	annotationProcessor 'org.projectlombok:lombok:1.18.12'
 
 	implementation 'org.postgresql:postgresql'
 	implementation group: 'org.bgee.log4jdbc-log4j2', name: 'log4jdbc-log4j2-jdbc4.1', version: '1.16'

@@ -1,7 +1,6 @@
 package com.example.NewPostAlarmBot.Telegram;
 
-import com.example.NewPostAlarmBot.repository.JpaDomainRepo;
-import com.example.NewPostAlarmBot.service.SchedulerService;
+import com.example.NewPostAlarmBot.repository.DomainInfoRepo;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,9 +11,9 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 @Configuration
 public class TelegramConfig {
 
-    private final JpaDomainRepo jpaDomainRepo;
+    private final DomainInfoRepo jpaDomainRepo;
 
-    public TelegramConfig(JpaDomainRepo jpaDomainRepo) {
+    public TelegramConfig(DomainInfoRepo jpaDomainRepo) {
         this.jpaDomainRepo = jpaDomainRepo;
     }
 
@@ -23,7 +22,6 @@ public class TelegramConfig {
 
     @Bean
     public TelegramBotsApi TelegramBotRegisterConfig(SchedulerService schedulerService) throws TelegramApiException {
-
 
 
         TelegramMessageSender telegramMessageSender = new TelegramMessageSender(botToken);

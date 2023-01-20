@@ -1,6 +1,6 @@
 package com.example.NewPostAlarmBot.controller;
 
-import com.example.NewPostAlarmBot.service.SchedulerService;
+import com.example.NewPostAlarmBot.Telegram.SchedulerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;

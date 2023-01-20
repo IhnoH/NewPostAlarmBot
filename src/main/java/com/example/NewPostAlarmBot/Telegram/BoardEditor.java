@@ -1,14 +1,16 @@
-package com.example.NewPostAlarmBot.service;
+package com.example.NewPostAlarmBot.Telegram;
 
+import com.example.NewPostAlarmBot.DTO.BoardDto;
+import com.example.NewPostAlarmBot.DTO.CrawlDto;
 import com.example.NewPostAlarmBot.domain.Board;
-import com.example.NewPostAlarmBot.domain.BoardList;
 import com.example.NewPostAlarmBot.domain.Crawl;
-import com.example.NewPostAlarmBot.repository.JpaBoardRepo;
-import com.example.NewPostAlarmBot.repository.JpaCrawlRepo;
+import com.example.NewPostAlarmBot.repository.BoardRepo;
+import com.example.NewPostAlarmBot.repository.CrawlRepo;
+import com.example.NewPostAlarmBot.service.BoardService;
+import com.example.NewPostAlarmBot.service.CrawlService;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -23,15 +25,19 @@ import java.util.stream.Collectors;
 //@Service
 @Transactional
 public class BoardEditor {
-    private final JpaCrawlRepo jpaCrawlRepo;
-    private final JpaBoardRepo jpaBoardRepo;
+    
+    private final CrawlService crawlService;
+    private final BoardService boardService;
 
     public final ChromeDriver driver;
 
-    public static Map<String, Crawl> crawlMap = new ConcurrentHashMap<>();
+    public static Map<String, CrawlDto> crawlMap = new ConcurrentHashMap<>();
+    public static Map<String, BoardDto> boardList = new ConcurrentHashMap<>();
 
-    public BoardEditor(JpaCrawlRepo jpaCrawlRepo, JpaBoardRepo jpaBoardRepo) {this.jpaCrawlRepo = jpaCrawlRepo;
-        this.jpaBoardRepo = jpaBoardRepo;
+    public BoardEditor(CrawlService crawlService, BoardService boardService) {
+        this.crawlService = crawlService;
+        this.boardService = boardService;
+
         WebDriverManager.chromedriver().setup();
         ChromeOptions options = new ChromeOptions();
         options.addArguments("headless"); // GUI 없이 실행
@@ -46,17 +52,13 @@ public class BoardEditor {
 
     public void init(String url){
         if(!crawlMap.containsKey(url)){
-            Crawl crawl = new Crawl();
-            crawl.setUrl(url);
-            crawl.setTitleClass("");
-            crawl.setNumClass("");
-            crawl.setUrlTitle(driver.getTitle());
-            crawlMap.put(url, crawl);
+            CrawlDto crawlDto = new CrawlDto();
+            crawlDto.setUrl(url);
+            crawlDto.setTitleClass("");
+            crawlDto.setNumClass("");
+            crawlDto.setUrlTitle(driver.getTitle());
+            crawlMap.put(url, crawlDto);
         }
-        //System.out.println("jpaBoardRepo size: "+jpaBoardRepo.findAll().size());
-        //System.out.println("jpaCrawlRepo size: "+jpaCrawlRepo.findAll().size());
-
-
     }
 
     // not use
@@ -90,18 +92,16 @@ public class BoardEditor {
 
 
     public List<String> boardUpdate(String url){
-        Board boardTmp = jpaBoardRepo.findByUrl(url);
-        if(boardTmp != null) BoardList.boardClass.add(boardTmp);
         List<String> newTitle = new ArrayList<>();
         List<String> curTitle = findPostList(url);
-        Crawl crawl = crawlMap.get(url);
-        String topTitle = crawl.getTopTitle();
+        CrawlDto crawlDto = crawlMap.get(url);
+        String topTitle = crawlDto.getTopTitle();
         //System.out.println(topTitle);
 
         //for(String t: curTitle) System.out.println(t);
         //System.out.println("ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ");
 
-        if(crawl.getTopTitle() != null){
+        if(crawlDto.getTopTitle() != null){
             for (String cur : curTitle) {
                 if (!topTitle.equals(cur)) {
                     newTitle.add(cur);
@@ -109,7 +109,7 @@ public class BoardEditor {
                 } else break;
             }
             if (newTitle.size() > 0) {
-                crawl.setTopTitle(newTitle.get(0));
+                crawlDto.setTopTitle(newTitle.get(0));
                 if(crawlMap.get(url).getBoardSize() == 0) {
                     crawlMap.get(url).setBoardSize(curTitle.size());
                     if(curTitle.size() == newTitle.size()) newTitle.clear();
@@ -118,37 +118,33 @@ public class BoardEditor {
                     newTitle.clear(); // 새로운 제목 리스트여도 개수가 전체 게시글 개수와 같으면 보내지 않음
             }
         }
-        else crawl.setTopTitle(curTitle.get(0));
-        crawlMap.put(url, crawl);
+        else crawlDto.setTopTitle(curTitle.get(0));
+        crawlMap.put(url, crawlDto);
+
+//        System.out.println("crawlMap " + crawlMap.size());
+//        System.out.println(crawlMap.toString());
+//        System.out.println("BoardList " + boardList.size());
+//        System.out.println(boardList.toString());
+//        System.out.println("\n");
 
         return newTitle;
     }
 
     public List<String> findPostList(String url){
-        Board board = new Board();
+        BoardDto board;
 
-        List<String> titleList = new ArrayList<>();
+        List<String> titleList;
         List<String> titListWithoutNotice = new ArrayList<>();
-        List<String> numList = new ArrayList<>();
+        List<String> numList;
 
-            for (Board b : BoardList.boardClass) {
-                if (url.contains(b.getUrl())) {
-                    board = b;
-                    break;
-                }
-            }
-
-
-        if(Objects.equals(board.title, "")) {
+        if(boardList.keySet().contains(url)) {
+            if (boardList.get(url).title.equals(""))
+                findPostClass(url);
+            board = boardList.get(url);
+        }
+        else{
             findPostClass(url);
-            for(Board b: BoardList.boardClass){
-                if(url.contains(b.getUrl())){
-                    board = b;
-                    break;
-                }
-            }
-            //System.out.println("title class: " + board.title);
-            //System.out.println("num class: " + board.num);
+            board = boardList.get(url);
         }
 
         titleList = getElem(board.title);
@@ -327,7 +323,7 @@ public class BoardEditor {
                     boardClassList.remove(i);
                     continue;
                 }
-                String tmp3 = t.get(3).getText();   // 랜덤한 post 뽑아서
+                String tmp3 = t.get(3).getText();   // 무작위 post 뽑아서
                 //tmp3 = tmp3.replaceAll(" ", "").replaceAll("\n", "");
 
                 if (isDigit(tmp3) && Objects.equals(numTmp, "")) numTmp = boardClassList.get(i);
@@ -345,9 +341,9 @@ public class BoardEditor {
         crawlMap.get(url).setTitleClass(titClass);
         crawlMap.get(url).setNumClass(numClass);
 
-        Board board = new Board(url, titClass, numClass);
-        BoardList.boardClass.add(board);
-        jpaBoardRepo.save(board);
+        BoardDto dto = new BoardDto(url, titClass, numClass);
+        boardList.put(url, dto);
+        boardService.save(dto);
     }
 
     public List<String> getElem(String clss){
@@ -457,7 +453,7 @@ public class BoardEditor {
         int swc = 0;
         newTitle.clear();
         try{
-            String preTitle = stringToList(jpaCrawlRepo.findByUrl(url).get().getNewTitle()).get(0);
+            String preTitle = stringToList(crawlService.findByUrl(url).getNewTitle()).get(0);
             List<String> curTitle = getTitleListManual2(url);
             //System.out.println(preTitle);
 
@@ -470,22 +466,23 @@ public class BoardEditor {
             }
             //System.out.println("newTitle num: " + newTitle.size());
 
-            Crawl crawl = jpaCrawlRepo.findByUrl(url).get();
+            CrawlDto crawlDto = crawlService.findByUrl(url);
+
 
             if(newTitle.size() == 0) {
-                crawl.setNewTitle(crawl.getTopTitle());
+                crawlDto.setNewTitle(crawlDto.getTopTitle());
             }
             else if (newTitle.size() > 6) {
-                crawl.setTopTitle(stringToList(crawl.getNewTitle()).get(0));
-                crawl.setNewTitle(newTitle.get(0));
+                crawlDto.setTopTitle(stringToList(crawlDto.getNewTitle()).get(0));
+                crawlDto.setNewTitle(newTitle.get(0));
             }
             else {
-                crawl.setTopTitle(preTitle);
-                crawl.setNewTitle(listToString(newTitle));
+                crawlDto.setTopTitle(preTitle);
+                crawlDto.setNewTitle(listToString(newTitle));
             }
 
-            jpaCrawlRepo.save(crawl);
-            List<String> tmp = stringToList(crawl.getNewTitle());
+            crawlService.save(crawlDto);
+            List<String> tmp = stringToList(crawlDto.getNewTitle());
             for(String t: tmp){
                 //System.out.println(t);
             }
@@ -493,11 +490,11 @@ public class BoardEditor {
         }catch (Exception e){
             List<String> tmp = getTitleListManual2(url);
 
-            Crawl crawl = jpaCrawlRepo.findByUrl(url).get();
+            CrawlDto crawlDto = crawlService.findByUrl(url);
 
-            crawl.setNewTitle(tmp.get(0));
-            crawl.setUrl(url);
-            jpaCrawlRepo.save(crawl);
+            crawlDto.setNewTitle(tmp.get(0));
+            crawlDto.setUrl(url);
+            crawlService.save(crawlDto);
         }
     }
 

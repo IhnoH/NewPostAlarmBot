@@ -1,5 +1,6 @@
 package com.example.NewPostAlarmBot.domain;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,6 +15,7 @@ public class Board {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Builder
     public Board(String url, String title, String num){
         this.title = title;
         this.num = num;
@@ -26,8 +28,9 @@ public class Board {
         this.writer = "";
     }
 
-    public String title = "";
-    public String num = "";
-    public String writer = "";
-    public String url = "";
+    public String title;
+    public String num;
+    public String writer;
+    public String url;
+
 }

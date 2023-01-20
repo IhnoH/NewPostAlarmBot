@@ -1,9 +1,9 @@
-package com.example.NewPostAlarmBot.service;
+package com.example.NewPostAlarmBot.Telegram;
 
-import com.example.NewPostAlarmBot.Telegram.TelegramMessageSender;
-import com.example.NewPostAlarmBot.domain.DomainId;
-import com.example.NewPostAlarmBot.repository.JpaBoardRepo;
-import com.example.NewPostAlarmBot.repository.JpaDomainRepo;
+import com.example.NewPostAlarmBot.DTO.DomainInfoDto;
+import com.example.NewPostAlarmBot.domain.DomainInfo;
+import com.example.NewPostAlarmBot.repository.DomainInfoRepo;
+import com.example.NewPostAlarmBot.service.DomainInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -22,45 +22,22 @@ import java.util.concurrent.*;
 public class SchedulerService{
 
     private final BoardEditor boardEditor;
-    private final JpaDomainRepo jpaDomainRepo;
-    private final JpaBoardRepo jpaBoardRepo;
+    private final DomainInfoService domainInfoService;
     private final TelegramMessageSender telegramMessageSender;
 
-    @Autowired
-    public static ThreadPoolTaskScheduler scheduler;
-
-    public final Map<String, ScheduledFuture<?>> jobMap = new ConcurrentHashMap<>();
-
-
-    public SchedulerService(BoardEditor boardEditor, JpaDomainRepo jpaDomainRepo, JpaBoardRepo jpaBoardRepo, TelegramMessageSender telegramMessageSender) {
+    public SchedulerService(BoardEditor boardEditor, DomainInfoService domainInfoService, TelegramMessageSender telegramMessageSender) {
         this.boardEditor = boardEditor;
-        this.jpaDomainRepo = jpaDomainRepo;
-        this.jpaBoardRepo = jpaBoardRepo;
+        this.domainInfoService = domainInfoService;
         this.telegramMessageSender = telegramMessageSender;
     }
 
-/*
-    public List<String> exe(String url){
-        System.out.println("run exe");
-        List<String> title = new ArrayList<>();
-        Runnable run = () -> {job(url, title);};
-        jobMap.put(url, scheduler.schedule(run, new PeriodicTrigger(8000, TimeUnit.MILLISECONDS)));
-
-        return title;
-    }
-*/
-
-
-    @Async
     @Scheduled(fixedDelay = 5000)
     public void job(){
-        List<DomainId> urlList = jpaDomainRepo.findAll();
-        //System.out.println("jpaDomainRepo size: "+jpaDomainRepo.findAll().size());
-
+        List<DomainInfoDto> urlList = domainInfoService.findAll();
         if(urlList == null || urlList.size() == 0) return;
 
         List<String> newTitleList;
-        for(DomainId tmp: urlList){
+        for(DomainInfoDto tmp: urlList){
             boolean login = true;
             String response = "";
             boardEditor.driverGet(tmp.getUrl());
@@ -70,7 +47,7 @@ public class SchedulerService{
                 login = boardEditor.login(tmp.getUrl(), tmp.getLoginId(), tmp.getLoginPw());
                 if(!login){
                     BoardEditor.crawlMap.remove(tmp.getUrl());
-                    jpaDomainRepo.delete(tmp);
+                    domainInfoService.delete(tmp);
                     response = "잘못된 로그인 정보입니다. 다시 시도해주세요.";
                     telegramMessageSender.sendMessage(tmp.getChatId(), response);
                     continue;
@@ -87,30 +64,7 @@ public class SchedulerService{
             telegramMessageSender.sendMessage(tmp.getChatId(), response);
 
         }
+
     }
-
-
-
-    @Async
-    public void register(String key, Long chatId){
-        Runnable run = () -> {
-            //List<String> newTitle = job(key, chatId);
-            //if(newTitle.size() > 0) sendMsg(setMsg(chatId, String.join("\n", newTitle)));
-        };
-        jobMap.put(key, scheduler.schedule(run, new PeriodicTrigger(4000, TimeUnit.MILLISECONDS)));
-    }
-
-
-    @Async
-    public void stop(String url){
-        try {
-            jobMap.get(url).cancel(true);
-            jobMap.remove(url);
-            System.out.println("해당 url의 모니터링을 중지합니다.");
-        }catch (NullPointerException e){
-            System.out.println("해당 url을 모니터링 하고있지 않습니다.");
-        }
-    }
-
 
 }
