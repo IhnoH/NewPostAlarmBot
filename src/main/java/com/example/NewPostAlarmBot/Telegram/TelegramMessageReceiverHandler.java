@@ -54,10 +54,10 @@ public class TelegramMessageReceiverHandler {
                 String responseText = "";
 
                 if ("/start".equals(command)) {
-                    responseText = "/url {새 글 알림을 받고 싶은 url 주소}\n" +
-                            "/stop {알림받는 것을 중지하고 싶은 url 주소}\n" +
-                            "/stopAll 모든 알림을 중지합니다." +
-                            "/list 알림받고 있는 url 주소 리스트를 제공합니다.";
+                    responseText = "/url {새 글 알림을 받고 싶은 주소}\n" +
+                            "/stop {알림받는 것을 중지하고 싶은 주소}\n" +
+                            "/stopAll 모든 알림을 중지합니다.\n" +
+                            "/list 알림받고 있는 주소 리스트를 제공합니다.";
                     //sendMsg(setMsg(chatId, responseText));
                 } else if ("/url".equals(command)) {
                     if (argument == null) {

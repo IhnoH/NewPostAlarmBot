@@ -11,6 +11,10 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
 import javax.transaction.Transactional;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -33,6 +37,7 @@ public class BoardEditor {
         this.crawlService = crawlService;
         this.boardService = boardService;
 
+        chromeInit();
         WebDriverManager.chromedriver().setup();
         ChromeOptions options = new ChromeOptions();
         options.addArguments("headless"); // GUI 없이 실행
@@ -685,5 +690,37 @@ public class BoardEditor {
         return (int) (doc.length() - doc.replace(str, "").length())/str.length();
     }
 
+    public void chromeInit(){
+        String os = System.getProperty("os.name").toLowerCase();
+
+        if (os.contains("win")) {
+            String cmd;
+            System.out.println("Windows");
+//            try{
+//                cmd = "powershell -command (new-object System.Net.WebClient).DownloadFile('http://dl.google.com/chrome/install/375.126/chrome_installer.exe', $env:TEMP+'\\chrome.exe')&&start %temp%\\chrome.exe";
+//                Process p = Runtime.getRuntime().exec("cmd /c " + cmd);
+//
+//                BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+//                String line = null;
+//                StringBuffer sb = new StringBuffer();
+//                sb.append(cmd);
+//                while ((line = reader.readLine()) != null) {
+//                    sb.append(line);
+//                    sb.append("\n");
+//                }
+//                String result = sb.toString();
+//                System.out.println(result);
+//
+//            }catch (IOException e){}
+        }
+
+        else if (os.contains("linux")) {
+            System.out.println("Linux");
+            try{
+                String[] cmd = {"/bin/sh", "-c", "sudo apt install wget;sudo apt-get install -f;wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb;sudo dpkg -i google-chrome-stable_current_amd64.deb"};
+                Process p = Runtime.getRuntime().exec(cmd);
+            }catch (IOException e){}
+        }
+    }
 
 }
