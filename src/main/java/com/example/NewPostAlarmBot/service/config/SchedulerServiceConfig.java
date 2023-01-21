@@ -8,6 +8,7 @@ import com.example.NewPostAlarmBot.Telegram.BoardEditor;
 import com.example.NewPostAlarmBot.Telegram.SchedulerService;
 import com.example.NewPostAlarmBot.service.DomainInfoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -16,10 +17,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 @RequiredArgsConstructor
 public class SchedulerServiceConfig {
     private final BoardEditor boardEditor;
-    private final DomainInfoRepo jpaDomainRepo;
-    private final BoardRepo boardRepo;
     private final DomainInfoService domainInfoService;
-    private String botToken = "5765206121:AAH21VfSPgLSVtNZCvAQLr2ssqvbdP8GZiE";
+
+    @Value("${bot_token}")
+    private String botToken;
     private final TelegramMessageSender telegramMessageSender = new TelegramMessageSender(botToken);
 
     @Bean

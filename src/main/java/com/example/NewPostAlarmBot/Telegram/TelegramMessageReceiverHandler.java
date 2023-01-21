@@ -1,7 +1,9 @@
 package com.example.NewPostAlarmBot.Telegram;
 
+import com.example.NewPostAlarmBot.DTO.DomainInfoDto;
 import com.example.NewPostAlarmBot.domain.DomainInfo;
 import com.example.NewPostAlarmBot.repository.DomainInfoRepo;
+import com.example.NewPostAlarmBot.service.DomainInfoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -23,8 +25,8 @@ public class TelegramMessageReceiverHandler {
     private final TelegramMessageSender telegramMessageSender;
     @Autowired
     private final SchedulerService schedulerService;
-    @Autowired
-    private final DomainInfoRepo jpaDomainRepo;
+
+    private final DomainInfoService domainInfoService;
 
 
     private Map<String, ScheduledFuture<?>> jobMap = new ConcurrentHashMap<>();
@@ -67,37 +69,39 @@ public class TelegramMessageReceiverHandler {
                         return;
                     }
 
-                    DomainInfo d = new DomainInfo();
+                    DomainInfoDto d = new DomainInfoDto();
                     d.setUrl(argument);
                     d.setChatId(chatId);
-                    jpaDomainRepo.save(d);
+                    domainInfoService.save(d);
                     return;
 
                 } else if ("/list".equals(command)) {
-                    List<DomainInfo> urlList = jpaDomainRepo.findAll();
+                    List<DomainInfoDto> urlList = domainInfoService.findAll();
                     responseText = "URL List";
-                    for(DomainInfo d: urlList){
+                    for(DomainInfoDto d: urlList){
                         responseText = responseText + "\n" + d.getUrl();
                     }
 
                 } else if ("/stop".equals(command)){
-                    Optional<DomainInfo> d =  jpaDomainRepo.findByUrl(argument);
-                    if (d.isEmpty()) responseText = "잘못된 url입니다.";
-                    else{
-                        jpaDomainRepo.delete(d.get());
+                    try {
+                        DomainInfoDto d = domainInfoService.findByUrl(argument);
+                        domainInfoService.delete(d);
                         BoardEditor.crawlMap.remove(command);
                         responseText = "정상적으로 중지되었습니다.";
+                    }catch (Exception e){
+                        responseText = "잘못된 url입니다.";
                     }
+
                 } else if("/login".equals(command)){
                     List<String> arg = Arrays.asList(argument.split(" "));
 
                     if(arg.size() == 3){
-                        DomainInfo d = new DomainInfo();
+                        DomainInfoDto d = new DomainInfoDto();
                         d.setUrl(arg.get(0));
                         d.setChatId(chatId);
                         d.setLoginId(arg.get(1));
                         d.setLoginPw(arg.get(2));
-                        jpaDomainRepo.save(d);
+                        domainInfoService.save(d);
                         return;
                     }
                     else responseText = "입력 형식이 잘못되었습니다.";

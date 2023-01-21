@@ -62,7 +62,6 @@ public class SchedulerService{
 
             response = BoardEditor.crawlMap.get(tmp.getUrl()).getUrlTitle() + "\n\n- " + String.join("\n- ", newTitleList);
             telegramMessageSender.sendMessage(tmp.getChatId(), response);
-
         }
 
     }
