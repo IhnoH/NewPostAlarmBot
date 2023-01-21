@@ -17,11 +17,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	implementation "io.springfox:springfox-swagger2:2.9.2"
-	implementation "io.springfox:springfox-swagger-ui:2.9.2"
-	implementation 'org.jsoup:jsoup:1.14.3'
-	implementation group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '3.141.59'
-	implementation group: 'io.github.bonigarcia', name: 'webdrivermanager', version: '5.0.3'
 	implementation 'org.apache.commons:commons-lang3' // util 을 사용 하기 위해
 	implementation 'com.google.code.gson:gson:2.8.5' // json 형식으로 편리하게 변환 하기 위해
 	implementation 'org.springframework.boot:spring-boot-starter-quartz'
@@ -30,6 +25,12 @@ dependencies {
 
 	implementation 'org.postgresql:postgresql'
 	implementation group: 'org.bgee.log4jdbc-log4j2', name: 'log4jdbc-log4j2-jdbc4.1', version: '1.16'
+
+	implementation "io.springfox:springfox-swagger2:2.9.2"
+	implementation "io.springfox:springfox-swagger-ui:2.9.2"
+	implementation 'org.jsoup:jsoup:1.14.3'
+	implementation group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '3.141.59'
+	implementation group: 'io.github.bonigarcia', name: 'webdrivermanager', version: '5.0.3'
 
 	implementation 'org.telegram:telegrambots:6.3.0'
 

@@ -2,12 +2,6 @@ package com.example.NewPostAlarmBot.service;
 
 import com.example.NewPostAlarmBot.DTO.BoardDto;
 import com.example.NewPostAlarmBot.DTO.CrawlDto;
-import com.example.NewPostAlarmBot.domain.Board;
-import com.example.NewPostAlarmBot.domain.Crawl;
-import com.example.NewPostAlarmBot.repository.BoardRepo;
-import com.example.NewPostAlarmBot.repository.CrawlRepo;
-import com.example.NewPostAlarmBot.service.BoardService;
-import com.example.NewPostAlarmBot.service.CrawlService;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.jvnet.hk2.annotations.Service;
 import org.openqa.selenium.By;
