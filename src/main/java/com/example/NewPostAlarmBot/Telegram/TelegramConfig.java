@@ -1,6 +1,7 @@
 package com.example.NewPostAlarmBot.Telegram;
 
 import com.example.NewPostAlarmBot.repository.DomainInfoRepo;
+import com.example.NewPostAlarmBot.service.DomainInfoService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,10 +12,10 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 @Configuration
 public class TelegramConfig {
 
-    private final DomainInfoRepo jpaDomainRepo;
+    private final DomainInfoService domainInfoService;
 
-    public TelegramConfig(DomainInfoRepo jpaDomainRepo) {
-        this.jpaDomainRepo = jpaDomainRepo;
+    public TelegramConfig(DomainInfoRepo jpaDomainRepo, DomainInfoService domainInfoService) {
+        this.domainInfoService = domainInfoService;
     }
 
     @Value("${bot_token}")
@@ -25,7 +26,7 @@ public class TelegramConfig {
 
 
         TelegramMessageSender telegramMessageSender = new TelegramMessageSender(botToken);
-        TelegramMessageReceiverHandler telegramMessageReceiverHandler = new TelegramMessageReceiverHandler(telegramMessageSender, schedulerService, jpaDomainRepo);
+        TelegramMessageReceiverHandler telegramMessageReceiverHandler = new TelegramMessageReceiverHandler(telegramMessageSender, schedulerService, domainInfoService);
         TelegramMessageReceiver telegramMessageReceiver = new TelegramMessageReceiver(botToken, telegramMessageReceiverHandler);
 
         final TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
