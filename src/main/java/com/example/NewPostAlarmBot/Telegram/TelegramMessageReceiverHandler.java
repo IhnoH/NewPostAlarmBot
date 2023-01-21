@@ -1,9 +1,9 @@
 package com.example.NewPostAlarmBot.Telegram;
 
 import com.example.NewPostAlarmBot.DTO.DomainInfoDto;
-import com.example.NewPostAlarmBot.domain.DomainInfo;
-import com.example.NewPostAlarmBot.repository.DomainInfoRepo;
+import com.example.NewPostAlarmBot.service.BoardEditor;
 import com.example.NewPostAlarmBot.service.DomainInfoService;
+import com.example.NewPostAlarmBot.service.SchedulerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -13,7 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 
@@ -23,13 +23,9 @@ public class TelegramMessageReceiverHandler {
 
     @Autowired
     private final TelegramMessageSender telegramMessageSender;
+
     @Autowired
-    private final SchedulerService schedulerService;
-
     private final DomainInfoService domainInfoService;
-
-
-    private Map<String, ScheduledFuture<?>> jobMap = new ConcurrentHashMap<>();
 
     @Async
     public void handle(Update update) {
@@ -59,7 +55,8 @@ public class TelegramMessageReceiverHandler {
 
                 if ("/start".equals(command)) {
                     responseText = "/url {새 글 알림을 받고 싶은 url 주소}\n" +
-                            "/stop {알림 받는 것을 중지하고 싶은 url 주소}\n" +
+                            "/stop {알림받는 것을 중지하고 싶은 url 주소}\n" +
+                            "/stopAll 모든 알림을 중지합니다." +
                             "/list 알림받고 있는 url 주소 리스트를 제공합니다.";
                     //sendMsg(setMsg(chatId, responseText));
                 } else if ("/url".equals(command)) {
@@ -72,6 +69,7 @@ public class TelegramMessageReceiverHandler {
                     DomainInfoDto d = new DomainInfoDto();
                     d.setUrl(argument);
                     d.setChatId(chatId);
+
                     domainInfoService.save(d);
                     return;
 
@@ -79,7 +77,8 @@ public class TelegramMessageReceiverHandler {
                     List<DomainInfoDto> urlList = domainInfoService.findAll();
                     responseText = "URL List";
                     for(DomainInfoDto d: urlList){
-                        responseText = responseText + "\n" + d.getUrl();
+                        if(Objects.equals(chatId, d.chatId))
+                            responseText = responseText + "\n" + d.getUrl();
                     }
 
                 } else if ("/stop".equals(command)){
@@ -89,7 +88,7 @@ public class TelegramMessageReceiverHandler {
                         BoardEditor.crawlMap.remove(command);
                         responseText = "정상적으로 중지되었습니다.";
                     }catch (Exception e){
-                        responseText = "잘못된 url입니다.";
+                        responseText = "알림받고 있는 주소가 존재하지 않습니다.";
                     }
 
                 } else if("/login".equals(command)){
@@ -105,9 +104,16 @@ public class TelegramMessageReceiverHandler {
                         return;
                     }
                     else responseText = "입력 형식이 잘못되었습니다.";
-
+                } else if("/stopAll".equals(command)){
+                    List<DomainInfoDto> urlList = domainInfoService.findByChatId(chatId);
+                    if(urlList.size() == 0) responseText = "알림받고 있는 주소가 존재하지 않습니다.";
+                    for(DomainInfoDto d: urlList){
+                        domainInfoService.delete(d);
+                        BoardEditor.crawlMap.remove(d.url);
+                    }
+                    responseText = "모든 알림이 정상적으로 중지되었습니다.";
                 }
-                telegramMessageSender.sendMessage(chatId, responseText);
+                telegramMessageSender.sendMsg(chatId, responseText);
             }
         }
     }

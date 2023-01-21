@@ -16,4 +16,6 @@ public interface DomainInfoRepo extends JpaRepository<DomainInfo, Long> {
     List<DomainInfo> findAll();
 
     DomainInfo save(@NotNull DomainInfo domainId);
+
+    List<DomainInfo> findByChatId(Long chatId);
 }

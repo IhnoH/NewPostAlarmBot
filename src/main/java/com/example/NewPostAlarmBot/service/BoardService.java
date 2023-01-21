@@ -29,11 +29,9 @@ public class BoardService {
 
     public String update(String url, BoardDto dto){
         Board board = boardRepo.findByUrl(url).orElseThrow(()->new IllegalArgumentException("update: Not found URL"));
-        Board tmp = dto.toEntity();
-
-        if (tmp.title != null && !tmp.title.equals("")) board.setTitle(tmp.title);
-        if (tmp.num != null && !tmp.num.equals("")) board.setNum(tmp.num);
-
+        board.setNum(dto.num);
+        board.setTitle(dto.title);
+        board.setWriter(dto.writer);
         return url;
     }
 

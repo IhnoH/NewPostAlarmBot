@@ -1,4 +1,4 @@
-package com.example.NewPostAlarmBot.Telegram;
+package com.example.NewPostAlarmBot.service;
 
 import com.example.NewPostAlarmBot.DTO.BoardDto;
 import com.example.NewPostAlarmBot.DTO.CrawlDto;
@@ -9,6 +9,7 @@ import com.example.NewPostAlarmBot.repository.CrawlRepo;
 import com.example.NewPostAlarmBot.service.BoardService;
 import com.example.NewPostAlarmBot.service.CrawlService;
 import io.github.bonigarcia.wdm.WebDriverManager;
+import org.jvnet.hk2.annotations.Service;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
@@ -22,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 
-//@Service
+@Service
 @Transactional
 public class BoardEditor {
     

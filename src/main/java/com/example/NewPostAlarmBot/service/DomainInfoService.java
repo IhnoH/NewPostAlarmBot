@@ -28,10 +28,11 @@ public class DomainInfoService {
             domainInfoRepo.save(dto.toEntity());
     }
 
-    public String update(String url, DomainInfoDto dto){
+    public void update(String url, DomainInfoDto dto){
         DomainInfo domainInfo = domainInfoRepo.findByUrl(url).orElseThrow(()->new IllegalArgumentException("Not found URL"));
-        domainInfo = dto.toEntity();
-        return url;
+        domainInfo.setUrlTitle(dto.urlTitle);
+        domainInfo.setLoginId(dto.loginId);
+        domainInfo.setLoginPw(dto.loginPw);
     }
 
     public List<DomainInfoDto> findAll(){
@@ -45,6 +46,14 @@ public class DomainInfoService {
     public DomainInfoDto findByUrl(String url) {
         DomainInfo domainInfo = domainInfoRepo.findByUrl(url).orElseThrow(() -> new IllegalArgumentException("Not found URL"));
         return new DomainInfoDto(domainInfo);
+    }
+
+    public List<DomainInfoDto> findByChatId(Long chatId){
+        List<DomainInfoDto> tmp = new ArrayList<>();
+
+        for(DomainInfo d: domainInfoRepo.findByChatId(chatId))
+            tmp.add(new DomainInfoDto(d));
+        return tmp;
     }
 
     public void delete(DomainInfoDto dto){

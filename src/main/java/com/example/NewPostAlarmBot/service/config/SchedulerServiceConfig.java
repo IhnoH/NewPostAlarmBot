@@ -2,10 +2,8 @@ package com.example.NewPostAlarmBot.service.config;
 
 
 import com.example.NewPostAlarmBot.Telegram.TelegramMessageSender;
-import com.example.NewPostAlarmBot.repository.BoardRepo;
-import com.example.NewPostAlarmBot.repository.DomainInfoRepo;
-import com.example.NewPostAlarmBot.Telegram.BoardEditor;
-import com.example.NewPostAlarmBot.Telegram.SchedulerService;
+import com.example.NewPostAlarmBot.service.BoardEditor;
+import com.example.NewPostAlarmBot.service.SchedulerService;
 import com.example.NewPostAlarmBot.service.DomainInfoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,10 +19,10 @@ public class SchedulerServiceConfig {
 
     @Value("${bot_token}")
     private String botToken;
-    private final TelegramMessageSender telegramMessageSender = new TelegramMessageSender(botToken);
 
     @Bean
     public SchedulerService schedulerService(){
+        TelegramMessageSender telegramMessageSender = new TelegramMessageSender(botToken);
         return new SchedulerService(boardEditor, domainInfoService, telegramMessageSender);
     }
 

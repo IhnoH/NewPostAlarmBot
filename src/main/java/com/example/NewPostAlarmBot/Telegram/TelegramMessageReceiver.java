@@ -1,7 +1,7 @@
 package com.example.NewPostAlarmBot.Telegram;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -9,8 +9,9 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import java.util.concurrent.*;
 
 
-@RequiredArgsConstructor
+
 public class TelegramMessageReceiver extends TelegramLongPollingBot {
+
 
 
     private final String botToken;
@@ -19,12 +20,16 @@ public class TelegramMessageReceiver extends TelegramLongPollingBot {
     @Autowired
     private final ExecutorService executorService = Executors.newFixedThreadPool(1);
 
+    public TelegramMessageReceiver(String botToken, TelegramMessageReceiverHandler telegramMessageReceiverHandler) {
+        this.botToken = botToken;
+        this.telegramMessageReceiverHandler = telegramMessageReceiverHandler;
+    }
+
 
     @Override
     public String getBotUsername() {return "newPostAlarmbot";}
     @Override
     public String getBotToken() {return botToken;}
-
 
 
     @Async

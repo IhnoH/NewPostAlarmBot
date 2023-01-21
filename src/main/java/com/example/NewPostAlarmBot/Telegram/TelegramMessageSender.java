@@ -1,5 +1,6 @@
 package com.example.NewPostAlarmBot.Telegram;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.telegram.telegrambots.bots.DefaultAbsSender;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -7,20 +8,19 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 public class TelegramMessageSender extends DefaultAbsSender {
 
-    private final String botToken;
+    public final String botToken;
 
     public TelegramMessageSender(String botToken) {
         super(new DefaultBotOptions());
         this.botToken = botToken;
     }
 
-
     @Override
     public String getBotToken() {
         return botToken;
     }
 
-    public void sendMessage(Long chatId, String text){
+    public void sendMsg(Long chatId, String text){
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
         sendMessage.setText(text);

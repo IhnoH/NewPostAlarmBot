@@ -1,10 +1,7 @@
 package com.example.NewPostAlarmBot.DTO;
 
 import com.example.NewPostAlarmBot.domain.Board;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 
 @Getter
