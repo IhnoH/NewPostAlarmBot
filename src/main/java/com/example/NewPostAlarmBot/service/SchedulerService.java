@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -29,15 +30,17 @@ public class SchedulerService{
     }
 
     @Scheduled(fixedDelay = 5000)
-    public void job(){
+    public void job() throws IOException {
         List<DomainInfoDto> urlList = domainInfoService.findAll();
         if(urlList == null || urlList.size() == 0) return;
+
 
         List<String> newTitleList;
         for(DomainInfoDto tmp: urlList){
             boolean login = true;
             String response = "";
-            boardEditor.driverGet(tmp.getUrl());
+            //boardEditor.driverGet(tmp.getUrl());
+            boardEditor.getDoc(tmp.getUrl());
             boardEditor.init(tmp.getUrl());
 
             if(tmp.getLoginId() != null && tmp.getLoginPw() != null) {

@@ -2,10 +2,6 @@ package com.example.NewPostAlarmBot.repository;
 
 import com.example.NewPostAlarmBot.domain.Crawl;
 import org.checkerframework.checker.units.qual.C;
-import org.jetbrains.annotations.NotNull;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

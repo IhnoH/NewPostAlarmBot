@@ -2,13 +2,10 @@ package com.example.NewPostAlarmBot.service;
 
 import com.example.NewPostAlarmBot.DTO.BoardDto;
 import com.example.NewPostAlarmBot.DTO.CrawlDto;
-import io.github.bonigarcia.wdm.WebDriverManager;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jvnet.hk2.annotations.Service;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 
 import javax.transaction.Transactional;
 import java.io.BufferedReader;
@@ -28,7 +25,7 @@ public class BoardEditor {
     private final CrawlService crawlService;
     private final BoardService boardService;
 
-    public final ChromeDriver driver;
+    public Document doc;
 
     public static Map<String, CrawlDto> crawlMap = new ConcurrentHashMap<>();
     public static Map<String, BoardDto> boardList = new ConcurrentHashMap<>();
@@ -37,16 +34,6 @@ public class BoardEditor {
         this.crawlService = crawlService;
         this.boardService = boardService;
 
-        WebDriverManager.chromedriver().setup();
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("headless"); // GUI 없이 실행
-        options.addArguments("disable-popup-blocking");  //팝업 무시
-        options.addArguments("disable-defult-apps");  //기본앱 사용 안함 ex)인터넷익스플로러, 엣지 등 기본앱 사용 x
-        driver = new ChromeDriver(options);
-    }
-
-    public void driverGet(String url){
-        driver.get(url);
     }
 
     public void init(String url){
@@ -55,7 +42,7 @@ public class BoardEditor {
             crawlDto.setUrl(url);
             crawlDto.setTitleClass("");
             crawlDto.setNumClass("");
-            crawlDto.setUrlTitle(driver.getTitle());
+            crawlDto.setUrlTitle(doc.title());
             crawlMap.put(url, crawlDto);
 //            System.out.println("BoardRepo size: " + boardService.findAll().size());
 //            for(BoardDto b: boardService.findAll()) System.out.println(b.url);
@@ -63,33 +50,33 @@ public class BoardEditor {
     }
 
     // not use
-    public void pattern(){
-        String doc = driver.getPageSource();
-        String[] tmp = doc.split("</");
-
-        Stack<String> tag = new Stack<>();
-        List<String> list = new ArrayList<>();
-        //Queue<String> tag = new ArrayDeque<>();
-
-        while(doc.contains("<!"))
-            doc = doc.replace(doc.substring(doc.indexOf("<!"), doc.indexOf("-->")+"-->".length()), "");
-
-        if(doc.contains("<tbody") && doc.contains("</tbody>"))
-            doc = doc.substring(doc.indexOf("<tbody"), doc.indexOf("</tbody>")+("</tbody>").length());
-
-
-        //System.out.println(doc);
-
-        for(int i =0;i<tmp.length;i++) {
-            tmp[i] = tmp[i].split(">")[0];
-            if(tmp[i].contains("script") || tmp[i].contains("html")) continue;
-
-            tag.push(tmp[i]);
-
-            //System.out.println("["+tag.peek()+"]");
-        }
-        //System.out.println(tag);
-    }
+//    public void pattern(){
+//        String src = doc
+//        String[] tmp = src.split("</");
+//
+//        Stack<String> tag = new Stack<>();
+//        List<String> list = new ArrayList<>();
+//        //Queue<String> tag = new ArrayDeque<>();
+//
+//        while(src.contains("<!"))
+//            src = src.replace(src.substring(src.indexOf("<!"), src.indexOf("-->")+"-->".length()), "");
+//
+//        if(src.contains("<tbody") && src.contains("</tbody>"))
+//            src = src.substring(src.indexOf("<tbody"), src.indexOf("</tbody>")+("</tbody>").length());
+//
+//
+//        //System.out.println(src);
+//
+//        for(int i =0;i<tmp.length;i++) {
+//            tmp[i] = tmp[i].split(">")[0];
+//            if(tmp[i].contains("script") || tmp[i].contains("html")) continue;
+//
+//            tag.push(tmp[i]);
+//
+//            //System.out.println("["+tag.peek()+"]");
+//        }
+//        //System.out.println(tag);
+//    }
 
 
     public List<String> boardUpdate(String url){
@@ -106,7 +93,7 @@ public class BoardEditor {
             for (String cur : curTitle) {
                 if (!topTitle.equals(cur)) {
                     newTitle.add(cur);
-                    //System.out.println(cur);
+                    System.out.println(cur);
                 } else break;
             }
             if (newTitle.size() > 0) {
@@ -134,9 +121,9 @@ public class BoardEditor {
     public List<String> findPostList(String url){
         BoardDto board;
 
-        List<String> titleList;
+        List<String> titleList = new ArrayList<>();
+        List<String> numList = new ArrayList<>();
         List<String> titListWithoutNotice = new ArrayList<>();
-        List<String> numList;
 
         if(boardList.keySet().contains(url)) {
             if (boardList.get(url).title.equals(""))
@@ -147,18 +134,16 @@ public class BoardEditor {
             findPostClass(url);
             board = boardList.get(url);
         }
-
-        titleList = getElem(board.title);
-        numList = getElem(board.num);
-
         try {
-            if (titleList.size() == 0) {
-                titleList = driver.findElements(By.className(board.title)).stream().map(t -> t.getText()).collect(Collectors.toList());
-            }
-            if(numList.size() == 0){
-                numList = driver.findElements(By.className(board.num)).stream().map(t -> t.getText()).collect(Collectors.toList());
-            }
+            titleList = doc.getElementsByClass(board.title).stream().map(Element::text).collect(Collectors.toList());
+            numList = doc.getElementsByClass(board.num).stream().map(Element::text).collect(Collectors.toList());
+
         }catch (Exception ignored){}
+
+        if (titleList.size() == 0) titleList = getElem(board.title);
+        if (numList.size() == 0) numList = getElem(board.num);
+
+
 
 
         // 게시글 상단의 공지로 고정되어 있는 게시글 제거
@@ -178,45 +163,43 @@ public class BoardEditor {
 //        System.out.println("titleList size: "+titleList.size());
 //        System.out.println("titListWithoutNotice size: " + titListWithoutNotice.size());
 //        System.out.println("ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ\n");
-//        for(String t:titListWithoutNotice) System.out.println(t);
+        for(String t:titListWithoutNotice) System.out.println(t);
 //        System.out.println(numList + " " + numList.size());
 
         return titListWithoutNotice;
     }
 
     public void findPostClass(String url){
-        driver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
-        String doc = driver.getPageSource();
-
-        while(doc.contains("<!--") && doc.contains("-->"))
-            doc = doc.replace(doc.substring(doc.indexOf("<!--"), doc.indexOf("-->")+"-->".length()), "");
+        String src = doc.outerHtml();
+        while(src.contains("<!--") && src.contains("-->"))
+            src = src.replace(src.substring(src.indexOf("<!--"), src.indexOf("-->")+"-->".length()), "");
 
 
         // 게시글이 존재할 가장 유력한 태그 장소 tbody
-        if(doc.contains("<tbody") && doc.contains("</tbody>")) {
-            int tbodyNum = countStr(doc, "<tbody");
+        if(src.contains("<tbody") && src.contains("</tbody>")) {
+            int tbodyNum = countStr(src, "<tbody");
             if(tbodyNum == 1)
-                doc = doc.substring(doc.indexOf("<tbody"), doc.indexOf("</tbody>") + ("</tbody>").length());
+                src = src.substring(src.indexOf("<tbody"), src.indexOf("</tbody>") + ("</tbody>").length());
             else{
                 String docTmp = "";
                 String docTmp2 = "";
                 for(int i = 0;i < tbodyNum;i++){
-                    docTmp2 = doc.substring(doc.indexOf("<tbody"), doc.indexOf("</tbody>") + ("</tbody>").length());
+                    docTmp2 = src.substring(src.indexOf("<tbody"), src.indexOf("</tbody>") + ("</tbody>").length());
                     if(docTmp.length() < docTmp2.length()) docTmp = docTmp2;
-                    doc = doc.replace(docTmp2, "");
+                    src = src.replace(docTmp2, "");
                 }
-                doc = docTmp;
+                src = docTmp;
             }
         }
-        else doc = doc.substring(doc.indexOf("<body"), doc.indexOf("</body>")+("</body>").length());
+        else src = src.substring(src.indexOf("<body"), src.indexOf("</body>")+("</body>").length());
 
 //        System.out.println("\nㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ\n");
-//        System.out.println(doc);
+//        System.out.println(src);
 //        System.out.println("\nㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ\n");
 
 
 //          // 반복되는 태그 찾는 프로세스 (포기 상태)
-//        String doc2 = doc.replaceAll("\n", "").replaceAll(" ", "").replaceAll("\t", "");
+//        String doc2 = src.replaceAll("\n", "").replaceAll(" ", "").replaceAll("\t", "");
 //        List<String> tagList = new ArrayList<>();
 //        if(doc2.contains("</")){
 //            String[] tagTmp = doc2.split("</");
@@ -263,7 +246,7 @@ public class BoardEditor {
 //        }
 //        System.out.println(cycle);
 
-        String[] tmp = doc.split("class=\"");
+        String[] tmp = src.split("class=\"");
 
         for(int i = 0;i<tmp.length;i++)
             tmp[i] = tmp[i].split("\"")[0];
@@ -300,9 +283,9 @@ public class BoardEditor {
             freqOfFreq.add(freq);
         }
 
-//        System.out.println(classNameList);
-//        System.out.println(classFreq);
-//        System.out.println(freqOfFreq + ", " + Arrays.toString(freqSet));
+        System.out.println(classNameList);
+        System.out.println(classFreq);
+        System.out.println(freqOfFreq + ", " + Arrays.toString(freqSet));
 
         int maxFreq = freqSet[freqOfFreq.indexOf(Collections.max(freqOfFreq))]; // 클래스 이름 빈도의 빈도의 최대값
         //int secFreq = freqSet[freqOfFreq.indexOf(s)];
@@ -332,14 +315,14 @@ public class BoardEditor {
 
         if(Objects.equals(titClass, "") || Objects.equals(numClass, "")) {
             for (int i = 0; i < boardClassList.size(); i++) {
-                List<WebElement> t = new ArrayList<>();
+                List<Element> t;
                 try {
-                    t = driver.findElements(By.className(boardClassList.get(i)));
+                    t = doc.getElementsByClass(boardClassList.get(i));
                 }catch (Exception e){
                     boardClassList.remove(i);
                     continue;
                 }
-                String tmp3 = t.get(3).getText();   // 무작위 post 뽑아서
+                String tmp3 = t.get(3).text();   // 무작위 post 뽑아서
                 //tmp3 = tmp3.replaceAll(" ", "").replaceAll("\n", "");
 
                 if (isDigit(tmp3) && Objects.equals(numTmp, "")) numTmp = boardClassList.get(i);
@@ -363,27 +346,27 @@ public class BoardEditor {
     }
 
     public List<String> getElem(String clss){
-        String doc = driver.getPageSource();
+        String src = this.doc.outerHtml();
         List<String> elemList = new ArrayList<>();
 
-        if(doc.contains("<tbody") && doc.contains("</tbody>")) {
-            int tbodyNum = countStr(doc, "<tbody");
+        if(src.contains("<tbody") && src.contains("</tbody>")) {
+            int tbodyNum = countStr(src, "<tbody");
             if(tbodyNum == 1)
-                doc = doc.substring(doc.indexOf("<tbody"), doc.indexOf("</tbody>") + ("</tbody>").length());
+                src = src.substring(src.indexOf("<tbody"), src.indexOf("</tbody>") + ("</tbody>").length());
             else{
                 String docTmp = "";
                 String docTmp2 = "";
                 for(int i = 0;i < tbodyNum;i++){
-                    docTmp2 = doc.substring(doc.indexOf("<tbody"), doc.indexOf("</tbody>") + ("</tbody>").length());
+                    docTmp2 = src.substring(src.indexOf("<tbody"), src.indexOf("</tbody>") + ("</tbody>").length());
                     if(docTmp.length() < docTmp2.length()) docTmp = docTmp2;
-                    doc = doc.replace(docTmp2, "");
+                    src = src.replace(docTmp2, "");
                 }
-                doc = docTmp;
+                src = docTmp;
             }
         }
-        else doc = doc.substring(doc.indexOf("<body"), doc.indexOf("</body>")+("</body>").length());
+        else src = src.substring(src.indexOf("<body"), src.indexOf("</body>")+("</body>").length());
 
-        String[] tmp = doc.split(clss+"\">");
+        String[] tmp = src.split(clss+"\">");
 
         for(int i = 1; i < tmp.length; i++){
             tmp[i] = tmp[i].replaceAll("\n", "").replaceAll("\t", "");
@@ -416,8 +399,8 @@ public class BoardEditor {
         List<String> num = new ArrayList<>();
 
         try {
-            title = driver.findElements(By.className(titClass)).stream().map(t -> t.getText()).collect(Collectors.toList());
-            num = driver.findElements(By.className(numClass)).stream().map(t -> t.getText()).collect(Collectors.toList());
+            title = doc.getElementsByClass(titClass).stream().map(Element::text).collect(Collectors.toList());
+            num = doc.getElementsByClass(numClass).stream().map(Element::text).collect(Collectors.toList());
         }catch (Exception e){
             title = getTitleListManual2(titClass);
         }
@@ -432,7 +415,7 @@ public class BoardEditor {
     }
 
     public List<String> getTitleListManual2(String name){
-        String src = driver.getPageSource();
+        String src = doc.outerHtml();
 
         while(src.contains("<strong") && src.contains("</strong>")) {
             try {
@@ -477,8 +460,6 @@ public class BoardEditor {
     }
 
     public void findNewTitle(String url, List<String> newTitle){
-        //driver.navigate().refresh();
-        //driver.get(url);
         int swc = 0;
         newTitle.clear();
         try{
@@ -528,8 +509,8 @@ public class BoardEditor {
     }
 
     public boolean login(String url, String id, String pw){
-        String doc = driver.getPageSource();
-        String[] tmp = doc.split("name=\"");
+        String src = doc.outerHtml();
+        String[] tmp = src.split("name=\"");
 
 
         String idName = ""; String pwName = "";
@@ -569,7 +550,7 @@ public class BoardEditor {
 
         System.out.println(idName + " " + pwName);
 
-//        tmp = doc.split("<");
+//        tmp = src.split("<");
 //        List<String> elem = new ArrayList<>();
 
 //        for(int i =0;i<tmp.length;i++) {
@@ -583,23 +564,23 @@ public class BoardEditor {
 //            }
 //        }
 
-        if(idName.length() != 0 && pwName.length() != 0){
-            driver.findElement(By.name(idName)).sendKeys(id);
-            driver.findElement(By.name(pwName)).sendKeys(pw + Keys.ENTER);
-            try{
-                if (!driver.switchTo().alert().getText().contains("no such alert")) {
-                    driver.switchTo().alert().accept();
-                    driver.switchTo().defaultContent();
-                    //driver.switchTo().
-                    return false;
-                }
-
-            }catch (Exception e){
-                crawlMap.get(url).setIdName(idName);
-                crawlMap.get(url).setPwName(pwName);
-                return true;
-            }
-        }
+//        if(idName.length() != 0 && pwName.length() != 0){
+//            driver.findElement(By.name(idName)).sendKeys(id);
+//            driver.findElement(By.name(pwName)).sendKeys(pw + Keys.ENTER);
+//            try{
+//                if (!driver.switchTo().alert().getText().contains("no such alert")) {
+//                    driver.switchTo().alert().accept();
+//                    driver.switchTo().defaultContent();
+//                    //driver.switchTo().
+//                    return false;
+//                }
+//
+//            }catch (Exception e){
+//                crawlMap.get(url).setIdName(idName);
+//                crawlMap.get(url).setPwName(pwName);
+//                return true;
+//            }
+//        }
 
 //        System.out.println(idName + " " + pwName);
 
@@ -685,8 +666,16 @@ public class BoardEditor {
         return tmp;
     }
 
-    public int countStr(String doc, String str){
-        return (int) (doc.length() - doc.replace(str, "").length())/str.length();
+    public int countStr(String src, String str){
+        return (int) (src.length() - src.replace(str, "").length())/str.length();
+    }
+
+    public Document getDoc(String url) throws IOException {
+        doc = Jsoup.connect(url)
+                .header("content-type", "application/json;charset=UTF-8")
+                .header("accept-language", "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
+                .get();
+        return doc;
     }
 
 }
