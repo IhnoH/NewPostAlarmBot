@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.telegram.telegrambots.bots.DefaultAbsSender;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 public class TelegramMessageSender extends DefaultAbsSender {
@@ -20,16 +21,12 @@ public class TelegramMessageSender extends DefaultAbsSender {
         return botToken;
     }
 
-    public void sendMsg(Long chatId, String text){
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(chatId);
-        sendMessage.setText(text);
-
-        sendMessage.enableHtml(true);
-        sendMessage.enableMarkdown(false);
+    public void sendMsg(SendMessage message){
+        message.enableHtml(true);
+        message.enableMarkdown(false);
 
         try {
-            this.execute(sendMessage);
+            this.execute(message);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }

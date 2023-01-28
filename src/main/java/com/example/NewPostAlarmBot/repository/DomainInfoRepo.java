@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface DomainInfoRepo extends JpaRepository<DomainInfo, Long> {
+public interface DomainInfoRepo extends JpaRepository<DomainInfo, Integer> {
 
     Optional<DomainInfo> findByUrl(String url);
 
@@ -17,4 +17,5 @@ public interface DomainInfoRepo extends JpaRepository<DomainInfo, Long> {
     DomainInfo save( DomainInfo domainId);
 
     List<DomainInfo> findByChatId(Long chatId);
+    Optional<DomainInfo> findById(Integer id);
 }

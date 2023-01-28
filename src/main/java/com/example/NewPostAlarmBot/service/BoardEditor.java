@@ -93,7 +93,7 @@ public class BoardEditor {
             for (String cur : curTitle) {
                 if (!topTitle.equals(cur)) {
                     newTitle.add(cur);
-                    System.out.println(cur);
+//                    System.out.println(cur);
                 } else break;
             }
             if (newTitle.size() > 0) {
@@ -163,7 +163,7 @@ public class BoardEditor {
 //        System.out.println("titleList size: "+titleList.size());
 //        System.out.println("titListWithoutNotice size: " + titListWithoutNotice.size());
 //        System.out.println("ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ\n");
-        for(String t:titListWithoutNotice) System.out.println(t);
+//        for(String t:titListWithoutNotice) System.out.println(t);
 //        System.out.println(numList + " " + numList.size());
 
         return titListWithoutNotice;
@@ -283,9 +283,9 @@ public class BoardEditor {
             freqOfFreq.add(freq);
         }
 
-        System.out.println(classNameList);
-        System.out.println(classFreq);
-        System.out.println(freqOfFreq + ", " + Arrays.toString(freqSet));
+//        System.out.println(classNameList);
+//        System.out.println(classFreq);
+//        System.out.println(freqOfFreq + ", " + Arrays.toString(freqSet));
 
         int maxFreq = freqSet[freqOfFreq.indexOf(Collections.max(freqOfFreq))]; // 클래스 이름 빈도의 빈도의 최대값
         //int secFreq = freqSet[freqOfFreq.indexOf(s)];
@@ -548,7 +548,7 @@ public class BoardEditor {
             }
         }
 
-        System.out.println(idName + " " + pwName);
+//        System.out.println(idName + " " + pwName);
 
 //        tmp = src.split("<");
 //        List<String> elem = new ArrayList<>();

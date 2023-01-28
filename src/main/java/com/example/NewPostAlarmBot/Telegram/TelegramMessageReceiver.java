@@ -4,8 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import javax.security.auth.callback.Callback;
 import java.util.concurrent.*;
 
 
@@ -35,9 +37,21 @@ public class TelegramMessageReceiver extends TelegramLongPollingBot {
     @Async
     @Override
     public void onUpdateReceived(Update update) {
-        executorService.submit(()->{
-            telegramMessageReceiverHandler.handle(update);
-        });
+        if(update.hasCallbackQuery()){
+            executorService.submit(()->{
+                telegramMessageReceiverHandler.callbackHandle(update);
+            });
+        }else{
+            executorService.submit(()->{
+                telegramMessageReceiverHandler.handle(update);
+            });
+        }
 
     }
+
+    public void callback(CallbackQuery q){
+
+    }
+
+
 }

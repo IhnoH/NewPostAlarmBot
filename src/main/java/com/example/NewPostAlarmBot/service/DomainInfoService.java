@@ -6,6 +6,7 @@ import com.example.NewPostAlarmBot.DTO.DomainInfoDto;
 import com.example.NewPostAlarmBot.domain.Crawl;
 import com.example.NewPostAlarmBot.domain.DomainInfo;
 import com.example.NewPostAlarmBot.repository.DomainInfoRepo;
+import io.swagger.models.auth.In;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -41,6 +42,11 @@ public class DomainInfoService {
         for(DomainInfo d: domainInfoRepo.findAll())
             tmp.add(new DomainInfoDto(d));
         return tmp;
+    }
+
+    public DomainInfoDto findById(Integer id){
+        DomainInfo domainInfo = domainInfoRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Not found ID"));
+        return new DomainInfoDto((domainInfo));
     }
 
     public DomainInfoDto findByUrl(String url) {

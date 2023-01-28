@@ -15,7 +15,7 @@ import javax.persistence.Id;
 public class DomainInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;
 
     private Long chatId;
     private String url;

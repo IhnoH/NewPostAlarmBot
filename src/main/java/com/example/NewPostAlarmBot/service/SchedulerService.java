@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
@@ -34,34 +35,35 @@ public class SchedulerService{
         List<DomainInfoDto> urlList = domainInfoService.findAll();
         if(urlList == null || urlList.size() == 0) return;
 
-
         List<String> newTitleList;
         for(DomainInfoDto tmp: urlList){
+            String url = tmp.getUrl();
             boolean login = true;
+
             String response = "";
-            //boardEditor.driverGet(tmp.getUrl());
-            boardEditor.getDoc(tmp.getUrl());
-            boardEditor.init(tmp.getUrl());
+            boardEditor.getDoc(url);
+            boardEditor.init(url);
 
             if(tmp.getLoginId() != null && tmp.getLoginPw() != null) {
-                login = boardEditor.login(tmp.getUrl(), tmp.getLoginId(), tmp.getLoginPw());
+                login = boardEditor.login(url, tmp.getLoginId(), tmp.getLoginPw());
                 if(!login){
-                    BoardEditor.crawlMap.remove(tmp.getUrl());
+                    BoardEditor.crawlMap.remove(url);
                     domainInfoService.delete(tmp);
                     response = "잘못된 로그인 정보입니다. 다시 시도해주세요.";
-                    telegramMessageSender.sendMsg(tmp.getChatId(), response);
+                    ;
+                    telegramMessageSender.sendMsg(SendMessage.builder().chatId(tmp.chatId).text(response).build());
                     continue;
                 }
             }
 
-            newTitleList = boardEditor.boardUpdate(tmp.getUrl());
+            newTitleList = boardEditor.boardUpdate(url);
 
             if(newTitleList.isEmpty()) continue;
-            //System.out.println(RestApiService.crawlMap.get(tmp.getUrl()).getUrlTitle());
-            //System.out.println(RestApiService.crawlMap.get(tmp.getUrl()).getTopTitle());
+            //System.out.println(RestApiService.crawlMap.get(url).getUrlTitle());
+            //System.out.println(RestApiService.crawlMap.get(url).getTopTitle());
 
-            response = BoardEditor.crawlMap.get(tmp.getUrl()).getUrlTitle() + "\n\n- " + String.join("\n- ", newTitleList);
-            telegramMessageSender.sendMsg(tmp.getChatId(), response);
+            response = BoardEditor.crawlMap.get(url).getUrlTitle() + "\n\n⦁ " + String.join("\n⦁ ", newTitleList);
+            telegramMessageSender.sendMsg(SendMessage.builder().chatId(tmp.chatId).text(response).build());
         }
     }
 }

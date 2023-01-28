@@ -8,6 +8,7 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 public class DomainInfoDto {
+    public Integer id;
     public Long chatId;
     public String url;
     public String urlTitle;
@@ -15,6 +16,7 @@ public class DomainInfoDto {
     public String loginPw;
 
     public DomainInfoDto(DomainInfo entity){
+        this.id = entity.getId();
         this.url = entity.getUrl();
         this.urlTitle = entity.getUrlTitle();
         this.chatId = entity.getChatId();
