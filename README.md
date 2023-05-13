@@ -6,3 +6,6 @@
 - 게시판에서 가장 자주 반복되는 Class를 이용해서 파싱하여 게시글을 인식하고 주기적으로 갱신해서 새 글이 있는지 확인하여 알림을 제공합니다.
 
 # Development Environment
+- Spring Boot
+- PostgreSQL
+- CloudType
