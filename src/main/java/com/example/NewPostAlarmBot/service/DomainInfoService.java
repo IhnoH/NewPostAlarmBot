@@ -1,12 +1,9 @@
 package com.example.NewPostAlarmBot.service;
 
 
-import com.example.NewPostAlarmBot.DTO.CrawlDto;
 import com.example.NewPostAlarmBot.DTO.DomainInfoDto;
-import com.example.NewPostAlarmBot.domain.Crawl;
 import com.example.NewPostAlarmBot.domain.DomainInfo;
 import com.example.NewPostAlarmBot.repository.DomainInfoRepo;
-import io.swagger.models.auth.In;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +27,7 @@ public class DomainInfoService {
     }
 
     public void update(String url, DomainInfoDto dto){
-        DomainInfo domainInfo = domainInfoRepo.findByUrl(url).orElseThrow(()->new IllegalArgumentException("Not found URL"));
+        DomainInfo domainInfo = domainInfoRepo.findByUrl(url).orElseThrow(()->new IllegalArgumentException("Update: Not found URL"));
         domainInfo.setUrlTitle(dto.urlTitle);
         domainInfo.setLoginId(dto.loginId);
         domainInfo.setLoginPw(dto.loginPw);
@@ -45,12 +42,12 @@ public class DomainInfoService {
     }
 
     public DomainInfoDto findById(Integer id){
-        DomainInfo domainInfo = domainInfoRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Not found ID"));
+        DomainInfo domainInfo = domainInfoRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Find By Id: Not found ID"));
         return new DomainInfoDto((domainInfo));
     }
 
     public DomainInfoDto findByUrl(String url) {
-        DomainInfo domainInfo = domainInfoRepo.findByUrl(url).orElseThrow(() -> new IllegalArgumentException("Not found URL"));
+        DomainInfo domainInfo = domainInfoRepo.findByUrl(url).orElseThrow(() -> new IllegalArgumentException("Find By Url: Not found URL"));
         return new DomainInfoDto(domainInfo);
     }
 
@@ -63,7 +60,7 @@ public class DomainInfoService {
     }
 
     public void delete(DomainInfoDto dto){
-        DomainInfo domainInfo = domainInfoRepo.findByUrl(dto.getUrl()).orElseThrow(() -> new IllegalArgumentException("Not found URL"));
+        DomainInfo domainInfo = domainInfoRepo.findByUrl(dto.getUrl()).orElseThrow(() -> new IllegalArgumentException("Delete: Not found URL"));
         domainInfoRepo.delete(domainInfo);
     }
 }

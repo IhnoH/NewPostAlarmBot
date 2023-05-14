@@ -42,12 +42,12 @@ public class SchedulerService{
 
             String response = "";
             boardEditor.getDoc(url);
-            boardEditor.init(url);
+            boardEditor.init(tmp);
 
             if(tmp.getLoginId() != null && tmp.getLoginPw() != null) {
                 login = boardEditor.login(url, tmp.getLoginId(), tmp.getLoginPw());
                 if(!login){
-                    BoardEditor.crawlMap.remove(url);
+                    BoardEditor.postMap.remove(url);
                     domainInfoService.delete(tmp);
                     response = "잘못된 로그인 정보입니다. 다시 시도해주세요.";
                     ;
@@ -59,10 +59,10 @@ public class SchedulerService{
             newTitleList = boardEditor.boardUpdate(url);
 
             if(newTitleList.isEmpty()) continue;
-            //System.out.println(RestApiService.crawlMap.get(url).getUrlTitle());
-            //System.out.println(RestApiService.crawlMap.get(url).getTopTitle());
+            //System.out.println(RestApiService.postMap.get(url).getUrlTitle());
+            //System.out.println(RestApiService.postMap.get(url).getTopTitle());
 
-            response = BoardEditor.crawlMap.get(url).getUrlTitle() + "\n\n⦁ " + String.join("\n⦁ ", newTitleList);
+            response = BoardEditor.postMap.get(url).getUrlTitle() + "\n\n⦁ " + String.join("\n⦁ ", newTitleList);
             telegramMessageSender.sendMsg(SendMessage.builder().chatId(tmp.chatId).text(response).build());
         }
     }

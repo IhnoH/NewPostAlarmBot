@@ -14,6 +14,7 @@ public class DomainInfoDto {
     public String urlTitle;
     public String loginId;
     public String loginPw;
+    public String keyword;
 
     public DomainInfoDto(DomainInfo entity){
         this.id = entity.getId();
@@ -22,6 +23,7 @@ public class DomainInfoDto {
         this.chatId = entity.getChatId();
         this.loginId = entity.getLoginId();
         this.loginPw = entity.getLoginPw();
+        this.keyword = entity.getKeyword();
     }
 
     public DomainInfo toEntity(){
@@ -31,6 +33,7 @@ public class DomainInfoDto {
                 .chatId(chatId)
                 .loginId(loginId)
                 .loginPw(loginPw)
+                .keyword(keyword)
                 .build();
     }
 }

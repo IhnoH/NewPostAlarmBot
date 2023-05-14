@@ -20,12 +20,14 @@ public class DomainInfo {
     private Long chatId;
     private String url;
     private String urlTitle;
+    private String keyword;
 
     private String loginId;
     private String loginPw;
 
     @Builder
-    public DomainInfo(Long chatId, String url, String urlTitle, String loginId, String loginPw){
+    public DomainInfo(String keyword, Long chatId, String url, String urlTitle, String loginId, String loginPw){
+        this.keyword = keyword;
         this.chatId = chatId;
         this.url = url;
         this.urlTitle = urlTitle;

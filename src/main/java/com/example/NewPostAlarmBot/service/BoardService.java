@@ -28,7 +28,7 @@ public class BoardService {
     }
 
     public String update(String url, BoardDto dto){
-        Board board = boardRepo.findByUrl(url).orElseThrow(()->new IllegalArgumentException("update: Not found URL"));
+        Board board = boardRepo.findByUrl(url).orElseThrow(()->new IllegalArgumentException("Update: Not found URL"));
         board.setNum(dto.num);
         board.setTitle(dto.title);
         board.setWriter(dto.writer);
@@ -36,7 +36,7 @@ public class BoardService {
     }
 
     public BoardDto findByUrl(String url){
-        Board board = boardRepo.findByUrl(url).orElseThrow(()->new IllegalArgumentException("findByUrl: Not found URL"));
+        Board board = boardRepo.findByUrl(url).orElseThrow(()->new IllegalArgumentException("Find By Url: Not found URL"));
         return new BoardDto(board);
     }
 

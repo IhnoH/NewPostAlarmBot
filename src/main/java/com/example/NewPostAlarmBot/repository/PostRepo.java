@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface CrawlRepo extends JpaRepository<Crawl, Long> {
+public interface PostRepo extends JpaRepository<Crawl, Long> {
 
     Optional<Crawl> findByUrl(String url);
     Optional<Crawl> findById(Long id);

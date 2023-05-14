@@ -11,9 +11,4 @@ import javax.transaction.Transactional;
 @Transactional
 public class BoardServiceTest {
 
-
-    @Test
-    void createTest() throws Exception{
-
-    }
 }

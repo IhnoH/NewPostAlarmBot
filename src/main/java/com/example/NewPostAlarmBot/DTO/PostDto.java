@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @Data
 @NoArgsConstructor
-public class CrawlDto {
+public class PostDto {
     public String url;
     public String idName;
     public String pwName;
@@ -20,8 +20,9 @@ public class CrawlDto {
     public String urlTitle;
     public String titleClass;
     public String numClass;
+    public String keyword;
 
-    public CrawlDto(Crawl entity){
+    public PostDto(Crawl entity){
         this.url = entity.getUrl();
         this.idName = entity.getIdName();
         this.pwName = entity.getPwName();
