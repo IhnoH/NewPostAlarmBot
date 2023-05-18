@@ -14,6 +14,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
+import javax.validation.constraints.Null;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -142,12 +143,21 @@ public class TelegramMessageReceiverHandler {
     public void callbackHandle(Update update){
         List<String> callback = List.of(update.getCallbackQuery().getData().split(" "));
 
-        SendMessage sendMessage = new SendMessage();
         Long chatId = Long.parseLong(callback.get(1));
         String command = callback.get(0);
         String argument = "";
         if(callback.size() == 3) argument = callback.get(2);
         String responseText = "";
+
+
+        SendMessage sendMessage = responseWithCallback(command, responseText, chatId, argument);
+        if(sendMessage == null) return;
+
+        telegramMessageSender.sendMsg(sendMessage);
+    }
+
+    public SendMessage responseWithCallback(String command, String responseText, Long chatId, String argument){
+        SendMessage sendMessage = new SendMessage();
 
         if("addUrl".equals(command)){
             requestUrl = !requestUrl;
@@ -157,50 +167,50 @@ public class TelegramMessageReceiverHandler {
 
         }else if("list".equals(command)){
             log.info("list called by {}", chatId);
-            List<List<InlineKeyboardButton>> tmp = new ArrayList<>();
+            List<List<InlineKeyboardButton>> buttonList = new ArrayList<>();
             List<DomainInfoDto> dtoList = domainInfoService.findByChatId(chatId);
             if(dtoList.size() == 0){
                 emptyList(chatId);
-                return;
+                return null;
             }
             for(DomainInfoDto dto: dtoList){
-                List<InlineKeyboardButton> tmp2 = new ArrayList<>();
+                List<InlineKeyboardButton> tmp = new ArrayList<>();
                 String s = String.join(" ", new String[]{"urlMenu", chatId.toString(), dto.id.toString()});
                 System.out.println(s);
-                tmp2.add(InlineKeyboardButton.builder().callbackData(s).text(dto.url).build());
-                tmp.add(tmp2);
+                tmp.add(InlineKeyboardButton.builder().callbackData(s).text(dto.url).build());
+                buttonList.add(tmp);
             }
             responseText = "알림받고 있는 주소 목록";
-            sendMessage.setReplyMarkup(InlineKeyboardMarkup.builder().keyboard(tmp).build());
+            sendMessage.setReplyMarkup(InlineKeyboardMarkup.builder().keyboard(buttonList).build());
 
         }else if("urlMenu".equals(command)){
             log.info("urlMenu called by {}", chatId);
             List<List<InlineKeyboardButton>> tmp = new ArrayList<>();
             DomainInfoDto dto = domainInfoService.findById(Integer.parseInt(argument));
-
+            System.out.println("argument: "+argument);
             sendMessage.setReplyMarkup(InlineKeyboardMarkup.builder().keyboard(List.of(
-                    List.of(InlineKeyboardButton.builder().text("키워드 추가").callbackData("needKeyword "+chatId).build(),
+                    List.of(InlineKeyboardButton.builder().text("키워드 추가").callbackData("addKeyword "+chatId).build(),
                             InlineKeyboardButton.builder().text("키워드 삭제").callbackData("delKeyword "+chatId).build()),
-                    List.of(InlineKeyboardButton.builder().text("알림 중지").callbackData("stop "+chatId+" " + argument).build())
+                    List.of(InlineKeyboardButton.builder().text("알림 중지").callbackData("stopThis "+chatId+" " + argument).build())
             )).build());
             responseText = "URL MENU";
-        }else if("stop".equals(command)){
+        }else if("stop".equals(command)) {
             log.info("stop list by {}", chatId);
             List<List<InlineKeyboardButton>> tmp = new ArrayList<>();
             List<DomainInfoDto> dtoList = domainInfoService.findByChatId(chatId);
-            if(dtoList.size() == 0){
+            if (dtoList.size() == 0) {
                 emptyList(chatId);
-                return;
+                return null;
             }
-            for(DomainInfoDto dto: dtoList){
+            for (DomainInfoDto dto : dtoList) {
                 List<InlineKeyboardButton> tmp2 = new ArrayList<>();
-                String s = String.join(" ", new String[]{"delete", chatId.toString(), dto.id.toString()});
+                String s = String.join(" ", new String[]{"stopThis", chatId.toString(), dto.id.toString()});
                 tmp2.add(InlineKeyboardButton.builder().text(dto.url).callbackData(s).build());
                 tmp.add(tmp2);
             }
             sendMessage.setReplyMarkup(InlineKeyboardMarkup.builder().keyboard(tmp).build());
             responseText = "알림을 중지하고 싶은 주소를 눌러주세요.";
-        }else if("delete".equals(command)){
+        }else if("stopThis".equals(command)){
             for(DomainInfoDto dto: domainInfoService.findByChatId(chatId)){
                 if(dto.id.toString().equals(argument)){
                     domainInfoService.delete(dto);
@@ -215,25 +225,24 @@ public class TelegramMessageReceiverHandler {
             List<DomainInfoDto> urlList = domainInfoService.findByChatId(chatId);
             if(urlList.size() == 0) {
                 emptyList(chatId);
-                return;
+                return null;
             }
             for(DomainInfoDto d: urlList){
                 domainInfoService.delete(d);
                 BoardEditor.postMap.remove(d.url);
             }
             responseText = "모든 알림이 정상적으로 중지되었습니다.";
-        }else if("needKeyword".equals(command)){
-            log.info("needKeyword called by {}", chatId);
+        }else if("addKeyword".equals(command)){
+            log.info("addKeyword called by {}", chatId);
             addKeyword = true;
             responseText = "제목 키워드를 공백없이 한 단어로 입력해주세요.";
 
-        }else if("delKeyword".equals(command)){
-
         }
+
 
         sendMessage.setChatId(chatId);
         sendMessage.setText(responseText);
-        telegramMessageSender.sendMsg(sendMessage);
+        return sendMessage;
     }
 
     public void emptyList(Long chatId){
