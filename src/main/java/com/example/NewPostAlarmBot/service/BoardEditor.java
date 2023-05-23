@@ -104,6 +104,7 @@ public class BoardEditor {
 
         String src = doc.outerHtml();
         tbody = getTbody(src);
+        System.out.println(tbody);
 
         BoardDto board;
 
@@ -155,12 +156,12 @@ public class BoardEditor {
         boardClassList.addAll(findClassListPattern(classes));
         boardClassList = boardClassList.stream().distinct().collect(Collectors.toList());
 
-        //System.out.println(boardClassList);
+        System.out.println("boardClassList: " + boardClassList);
 
         String titClass = getTitleClass(boardClassList);
         String numClass = getNumClass(boardClassList);
 
-        List<String> titleList = getElem(titClass);
+        //List<String> titleList = getElem(titClass);
         //System.out.println(titClass + " " + numClass);
         //for(String b: boardClassList) System.out.println(b + " " + getElem(b));
         //System.out.println(titleList);
@@ -265,9 +266,9 @@ public class BoardEditor {
 
         for (Integer i : freqSet) freqOfFreq.add(Collections.frequency(classFreq, i));
 
-//        System.out.println(classNameList);
-//        System.out.println(classFreq);
-//        System.out.println(freqOfFreq + ", " + Arrays.toString(freqSet));
+        System.out.println("classNameList: " + classNameList);
+        System.out.println("classFreq: " + classFreq);
+        System.out.println(freqOfFreq + ", " + Arrays.toString(freqSet));
 
         int maxFreq = freqSet[freqOfFreq.indexOf(Collections.max(freqOfFreq))]; // 클래스 이름 빈도의 빈도의 최대값
 
