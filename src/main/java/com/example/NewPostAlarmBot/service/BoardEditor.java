@@ -184,6 +184,7 @@ public class BoardEditor {
     }
 
     public String getTbody(String src){
+        System.out.println(src);
         String tbody = "";
         if(src.contains("<tbody") && src.contains("</tbody>")) {
             List<Integer> tbodyStart = new ArrayList<>();
