@@ -41,6 +41,7 @@ public class SchedulerService{
             boolean login = true;
 
             String response = "";
+            System.out.println("url: " + url);
             boardEditor.getDoc(url);
             boardEditor.init(tmp);
 

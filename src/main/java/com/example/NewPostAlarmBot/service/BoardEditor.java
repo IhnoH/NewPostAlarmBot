@@ -103,6 +103,7 @@ public class BoardEditor {
         List<String> titListWithoutNotice = new ArrayList<>();
 
         String src = doc.outerHtml();
+
         tbody = getTbody(src);
         System.out.println(tbody);
 
@@ -152,6 +153,7 @@ public class BoardEditor {
         classes.forEach(t -> classes.set(classes.indexOf(t), t.split("\"")[0]));
         classes.remove(0);
 
+
         List<String> boardClassList = findClassListFreq(classes);
         boardClassList.addAll(findClassListPattern(classes));
         boardClassList = boardClassList.stream().distinct().collect(Collectors.toList());
@@ -179,6 +181,10 @@ public class BoardEditor {
         doc = Jsoup.connect(url)
                 .header("content-type", "application/json;charset=UTF-8")
                 .header("accept-language", "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
+                .header("cache-control", "no-cache")
+                .header("pragma", "no-cache")
+                .userAgent("Mozilla")
+                .timeout(4000)
                 .get();
         return doc;
     }

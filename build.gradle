@@ -17,9 +17,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	implementation 'org.apache.commons:commons-lang3'
+	//implementation 'org.apache.commons:commons-lang3'
 	implementation 'com.google.code.gson:gson:2.8.5'
-	implementation 'org.springframework.boot:spring-boot-starter-quartz'
+	//implementation 'org.springframework.boot:spring-boot-starter-quartz'
 	compileOnly 'org.projectlombok:lombok:1.18.12'
 	annotationProcessor 'org.projectlombok:lombok:1.18.12'
 
@@ -33,7 +33,6 @@ dependencies {
 	//implementation group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '3.141.59'
 	//implementation group: 'io.github.bonigarcia', name: 'webdrivermanager', version: '5.0.3'
 	implementation 'org.jsoup:jsoup:1.14.3'
-
 	implementation 'org.telegram:telegrambots:6.3.0'
 
 }
