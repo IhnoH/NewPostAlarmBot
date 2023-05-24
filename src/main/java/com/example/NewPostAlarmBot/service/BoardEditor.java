@@ -3,6 +3,7 @@ package com.example.NewPostAlarmBot.service;
 import com.example.NewPostAlarmBot.DTO.BoardDto;
 import com.example.NewPostAlarmBot.DTO.PostDto;
 import com.example.NewPostAlarmBot.DTO.DomainInfoDto;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -16,7 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-
+@Slf4j
 @Service
 @Transactional
 public class BoardEditor {
@@ -105,7 +106,7 @@ public class BoardEditor {
         String src = doc.outerHtml();
 
         tbody = getTbody(src);
-        System.out.println(tbody);
+        //System.out.println(tbody);
 
         BoardDto board;
 
@@ -158,10 +159,12 @@ public class BoardEditor {
         boardClassList.addAll(findClassListPattern(classes));
         boardClassList = boardClassList.stream().distinct().collect(Collectors.toList());
 
-        System.out.println("boardClassList: " + boardClassList);
+        //System.out.println("boardClassList: " + boardClassList);
 
         String titClass = getTitleClass(boardClassList);
         String numClass = getNumClass(boardClassList);
+        log.info("Title Class: " + titClass);
+        log.info("Num Class: " + numClass);
 
         //List<String> titleList = getElem(titClass);
         //System.out.println(titClass + " " + numClass);
@@ -183,14 +186,13 @@ public class BoardEditor {
                 .header("accept-language", "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
                 .header("cache-control", "no-cache")
                 .header("pragma", "no-cache")
-                .userAgent("Mozilla")
-                .timeout(4000)
+                .userAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0")
+                .timeout(5000)
                 .get();
         return doc;
     }
 
     public String getTbody(String src){
-        System.out.println(src);
         String tbody = "";
         if(src.contains("<tbody") && src.contains("</tbody>")) {
             List<Integer> tbodyStart = new ArrayList<>();
@@ -273,9 +275,9 @@ public class BoardEditor {
 
         for (Integer i : freqSet) freqOfFreq.add(Collections.frequency(classFreq, i));
 
-        System.out.println("classNameList: " + classNameList);
-        System.out.println("classFreq: " + classFreq);
-        System.out.println(freqOfFreq + ", " + Arrays.toString(freqSet));
+//        System.out.println("classNameList: " + classNameList);
+//        System.out.println("classFreq: " + classFreq);
+//        System.out.println(freqOfFreq + ", " + Arrays.toString(freqSet));
 
         int maxFreq = freqSet[freqOfFreq.indexOf(Collections.max(freqOfFreq))]; // 클래스 이름 빈도의 빈도의 최대값
 
