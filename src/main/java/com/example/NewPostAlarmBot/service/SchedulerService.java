@@ -13,6 +13,8 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 @Service
@@ -31,7 +33,7 @@ public class SchedulerService{
     }
 
     @Scheduled(fixedDelay = 5000)
-    public void job() throws IOException {
+    public void job() throws IOException, NoSuchAlgorithmException, KeyManagementException {
         List<DomainInfoDto> urlList = domainInfoService.findAll();
         if(urlList == null || urlList.size() == 0) return;
 
@@ -41,7 +43,6 @@ public class SchedulerService{
             boolean login = true;
 
             String response = "";
-            boardEditor.getDoc(url);
             boardEditor.init(tmp);
 
             if(tmp.getLoginId() != null && tmp.getLoginPw() != null) {

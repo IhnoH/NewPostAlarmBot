@@ -9,8 +9,14 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jvnet.hk2.annotations.Service;
 
+import javax.net.ssl.*;
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
@@ -33,8 +39,9 @@ public class BoardEditor {
         this.boardService = boardService;
     }
 
-    public void init(DomainInfoDto info){
+    public void init(DomainInfoDto info) throws IOException, NoSuchAlgorithmException, KeyManagementException {
         String url = info.getUrl();
+        tbody = getTbody(getDoc(url).body().outerHtml());
         if(!postMap.containsKey(url)){
             PostDto postDto = new PostDto();
             postDto.setUrl(url);
@@ -43,8 +50,6 @@ public class BoardEditor {
             postDto.setUrlTitle(doc.title());
             if(info.getKeyword() != null) postDto.setKeyword(info.getKeyword());
             postMap.put(url, postDto);
-//            System.out.println("BoardRepo size: " + boardService.findAll().size());
-//            for(BoardDto b: boardService.findAll()) System.out.println(b.url);
         }
     }
 
@@ -99,54 +104,17 @@ public class BoardEditor {
     }
 
     public List<String> findPostList(String url){
-        List<String> titleList = new ArrayList<>();
-        List<String> numList = new ArrayList<>();
-        List<String> titListWithoutNotice = new ArrayList<>();
-
-        String src = doc.outerHtml();
-
-        tbody = getTbody(src);
-        //System.out.println(tbody);
-
         BoardDto board;
 
-        if(boardList.containsKey(url)) {
-            if (boardList.get(url).title.equals("")) findPostClass(url);
-            board = boardList.get(url);
-        }
-        else{
+        if(!boardList.containsKey(url)) {
             findPostClass(url);
             board = boardList.get(url);
+            log.info(String.format("%s: \"%s\", \"%s\"", url, board.getTitle(), board.getNum()));
         }
-        try {
-            titleList = doc.getElementsByClass(board.title).stream().map(Element::text).collect(Collectors.toList());
-            numList = doc.getElementsByClass(board.num).stream().map(Element::text).collect(Collectors.toList());
-        }catch (Exception ignored){}
+        board = boardList.get(url);
+        List<String> titleList = withoutNoticeTitList(getElem(board.title), getElem(board.num));
 
-        if (titleList.size() == 0) titleList = getElem(board.title);
-        if (numList.size() == 0) numList = getElem(board.num);
-
-        // 게시글 상단의 공지로 고정되어 있는 게시글 제거
-        if(titleList.size() == numList.size()){
-            for(int i = 0;i<titleList.size();i++)
-                if(isDigit(numList.get(i)))
-                    titListWithoutNotice.add(titleList.get(i));
-        }
-        else{
-            for(int i = 0;i<titleList.size();i++)
-                if(i >= titleList.size() - numList.size())
-                    titListWithoutNotice.add(titleList.get(i));
-        }
-
-//        System.out.println(url);
-//        System.out.println("topTitle: " + titListWithoutNotice.get(0));
-//        System.out.println("titleList size: "+titleList.size());
-//        System.out.println("titListWithoutNotice size: " + titListWithoutNotice.size());
-//        System.out.println("ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ\n");
-//        for(String t:titListWithoutNotice) System.out.println(t);
-//        System.out.println(numList + " " + numList.size());
-
-        return titListWithoutNotice;
+        return titleList;
     }
 
     public void findPostClass(String url){
@@ -154,53 +122,46 @@ public class BoardEditor {
         classes.forEach(t -> classes.set(classes.indexOf(t), t.split("\"")[0]));
         classes.remove(0);
 
-
         List<String> boardClassList = findClassListFreq(classes);
         boardClassList.addAll(findClassListPattern(classes));
         boardClassList = boardClassList.stream().distinct().collect(Collectors.toList());
 
-        //System.out.println("boardClassList: " + boardClassList);
+        postMap.get(url).setTitleClass(getTitleClass(boardClassList));
+        postMap.get(url).setNumClass(getNumClass(boardClassList));
 
-        String titClass = getTitleClass(boardClassList);
-        String numClass = getNumClass(boardClassList);
-        log.info("Title Class: " + titClass);
-        log.info("Num Class: " + numClass);
-
-        //List<String> titleList = getElem(titClass);
-        //System.out.println(titClass + " " + numClass);
-        //for(String b: boardClassList) System.out.println(b + " " + getElem(b));
-        //System.out.println(titleList);
-
-        postMap.get(url).setTitleClass(titClass);
-        postMap.get(url).setNumClass(numClass);
-
-        BoardDto dto = new BoardDto(url, titClass, numClass);
+        BoardDto dto = new BoardDto(url, postMap.get(url).getTitleClass(), postMap.get(url).getNumClass());
         boardList.put(url, dto);
         boardService.save(dto);
     }
 
-
-    public Document getDoc(String url) throws IOException {
+    public Document getDoc(String url) throws IOException, NoSuchAlgorithmException, KeyManagementException {
+        setSSL();
         doc = Jsoup.connect(url)
                 .header("content-type", "application/json;charset=UTF-8")
                 .header("accept-language", "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
                 .header("cache-control", "no-cache")
                 .header("pragma", "no-cache")
-                .userAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0")
+                .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5)\\AppleWebKit 537.36 (KHTML, like Gecko) Chrome")
+                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .header("Accept-Encoding", "gzip, deflate, br")
                 .timeout(5000)
                 .get();
         return doc;
     }
-
-    public String getTbody(String src){
+    //Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5)\ AppleWebKit 537.36 (KHTML, like Gecko) Chrome
+    //Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0
+    public String getTbody(String src) {
         String tbody = "";
-        if(src.contains("<tbody") && src.contains("</tbody>")) {
+        if (src.contains("<tbody") && src.contains("</tbody>")) {
             List<Integer> tbodyStart = new ArrayList<>();
             List<Integer> tbodyEnd = new ArrayList<>();
             List<Integer> tbodyIdx = new ArrayList<>();
 
             Matcher matcher = Pattern.compile("<tbody").matcher(src);
-            while (matcher.find()) tbodyStart.add(matcher.start());
+            while (matcher.find()) {
+                tbodyStart.add(matcher.start());
+            }
 
             matcher = Pattern.compile("</tbody>").matcher(src);
             while (matcher.find()) tbodyEnd.add(matcher.start());
@@ -208,45 +169,70 @@ public class BoardEditor {
             tbodyIdx.addAll(tbodyStart);
             tbodyIdx.addAll(tbodyEnd);
             Collections.sort(tbodyIdx);
-            //System.out.println("tbody List: " + tbodyIdx);
 
             Stack<Integer> stack = new Stack<>();
-            for(Integer i: tbodyIdx){
-                if(tbodyEnd.contains(i)){
+            for (Integer i : tbodyIdx) {
+                if (tbodyEnd.contains(i)) {
                     Integer start = stack.pop();
                     String tmp = src.substring(start + 8, i);
-                    if(tmp.length() > tbody.length()) tbody = tmp;
+                    if (tmp.length() > tbody.length()) tbody = tmp;
                 }
-                stack.push(i);
+                else stack.push(i);
             }
-        }
-        else if(src.contains("<body") && src.contains("</body>"))
-            tbody = src.substring(src.indexOf("<body"), src.indexOf("</body>")+("</body>").length());
-        else tbody = null;
+        } else if (src.contains("<body") && src.contains("</body>"))
+            tbody = src.substring(src.indexOf("<body"), src.indexOf("</body") + ("</body>").length());
+        else tbody = src;
 
         return tbody;
     }
+
     public List<String> getElem(String clss){
         List<String> elemList = new ArrayList<>();
-        String pattern = "<[^>]*class=\"[^\"]*" + clss + "[^>]*>";
-        List<String> tmp = new ArrayList<>(Arrays.asList(tbody.replaceAll("\n", "").replaceAll("\t", "").split(pattern)));
-        tmp.remove(0);
-        //System.out.println(tmp.size());
-        for(String t: tmp){
-            //System.out.println(t + "\n\n");
-            while(t.indexOf(" ") == 0) {
-                t = t.replaceFirst(" ", "");
-                //System.out.println("t:" + t);
-            }
 
-            while(t.indexOf("<") == 0) t = t.replace(t.substring(0, t.indexOf(">")+1), "");
-            if(t.replaceAll(" ", "").length() == 0) continue;
-            String elemTmp = t.replace(t.substring(t.indexOf("<"), t.length()), "");
-            while(elemTmp.indexOf(" ") == 0) elemTmp = elemTmp.replaceFirst(" ", "");
-            if(elemTmp.replaceAll(" ", "").length() == 0) continue;
-            elemList.add(elemTmp);
+        if(clss.contains("^")){
+            clss = clss.replace("^", "");
+            String about = "<[^>]*class=\"[^\"]*" + clss + "[^>]*>";
+            elemList = elem(about);
         }
+        else{
+            String complete = "<[^>]*class=\"" + clss + "\"[^>]*>";
+            try{elemList = doc.getElementsByClass(clss).stream().map(i -> i.text()).collect(Collectors.toList());
+            }catch (Exception ignore){
+                elemList = elem(complete);
+            }
+        }
+//        System.out.println(clss);
+//        System.out.println(elemList + "\n");
+
         return elemList;
+    }
+    public List<String> elem(String reg){
+        List<String> myList = new ArrayList<>();
+
+        Pattern pattern = Pattern.compile(reg);
+        Matcher mat = pattern.matcher(tbody);
+        String tag = "";
+
+        if(mat.find()){
+            tag = mat.group();
+            Matcher mat2 = Pattern.compile("<[^></\"]* ").matcher(tag);
+            if(mat2.find()){
+                tag = mat2.group().replaceAll("[ <]*", "");
+            }
+        }
+
+        if(!tag.equals("")){
+            mat = Pattern.compile(String.format("%s((?!%s>).)*</%s>", pattern, tag, tag)).matcher(tbody);
+            while(mat.find()){
+                String t = mat.group();
+                //System.out.println(t);
+                while (t.contains("<") && t.contains(">"))
+                    t = t.replace(t.substring(t.indexOf("<"), t.indexOf(">") + 1), "");
+                while(t.contains("  ")) t = t.replaceAll("  ", " ");
+                myList.add(t.trim());
+            }
+        }
+        return myList;
     }
 
     public List<String> findClassListFreq(List<String> classes) {
@@ -275,8 +261,8 @@ public class BoardEditor {
 
         for (Integer i : freqSet) freqOfFreq.add(Collections.frequency(classFreq, i));
 
-//        System.out.println("classNameList: " + classNameList);
-//        System.out.println("classFreq: " + classFreq);
+//        System.out.println(classNameList);
+//        System.out.println(classFreq);
 //        System.out.println(freqOfFreq + ", " + Arrays.toString(freqSet));
 
         int maxFreq = freqSet[freqOfFreq.indexOf(Collections.max(freqOfFreq))]; // 클래스 이름 빈도의 빈도의 최대값
@@ -329,20 +315,22 @@ public class BoardEditor {
         }
 
         invalid = invalid.stream().distinct().collect(Collectors.toList());
-
         tmp.clear();
         for(int i = 0;i<invalid.size()-1;i++){
             double sum = 0.0;
             String x = invalid.get(i);
-            for(int j = 1;j<invalid.size();j++) sum += findSimilarity(x, invalid.get(j));
-            if(sum/invalid.size() < 0.6) tmp.add(x);
+            for(int j = 1;j<invalid.size();j++)
+                sum += findSimilarity(x.replaceAll("[0-9]*", ""), invalid.get(j).replaceAll("[0-9]*", ""));
+            if(sum/invalid.size() < 0.4) tmp.add(x);
         }
-        invalid.removeAll(tmp);
-        String t = invalid.get(0);
-        t = t.replaceAll("[0-9]*", "");
-        for(String s: t.split(" "))
-            if(s.length() > 2) master.add(s);
 
+        invalid.removeAll(tmp);
+        if(invalid.size() > 0){
+            String t = invalid.get(0);
+            t = t.replaceAll("[0-9]*", "");
+            for(String s: t.split(" "))
+                if(s.length() > 2) master.add(s+"^");
+        }
 
         master = master.stream().distinct().collect(Collectors.toList());
         master.remove(joker);
@@ -359,51 +347,50 @@ public class BoardEditor {
 
         for (String c : classList) {
             List<String> elemList = getElem(c);
-            //System.out.println(c + ": " + elemList);
             classLen.add(elemList.size());
             lenAvg.add(Math.round(elemList.stream().mapToDouble(String::length).sum() / elemList.size() * 100) / 100.0);
         }
-
         while (classLen.contains(0)) {
             int idx = classLen.indexOf(0);
             classList.remove(classList.get(idx));
             classLen.remove(classLen.get(idx));
             lenAvg.remove(lenAvg.get(idx));
         }
+//        System.out.println("classList: " + classList);
+//        System.out.println("classLen: " + classLen);
+//        System.out.println("len Avg: " + lenAvg);
+
+        int elemLen = 0;
+        for (String clss: classList) {
+            List<String> s;
+            String randElem;
+
+            s = getElem(clss);
+            if(s.size() < 1) continue;
+            randElem = s.stream().reduce((x, y) -> x.length() > y.length() ? x:y).get();
+            //System.out.println(clss + ": " + randElem);
+            if (elemLen < randElem.length() && !isDigit(randElem)) {
+                titTmp = clss;
+                elemLen = randElem.length();
+            }
+        }
+        titClass = titTmp;
 
         Double mx = Collections.max(lenAvg);
-        if (!Objects.equals(mx, 0)) titClass = classList.get(lenAvg.indexOf(mx));
+        if (!Objects.equals(mx, 0) && Objects.equals(titClass, "")) titClass = classList.get(lenAvg.indexOf(mx));
         else {
             String title = "";
             for (String c : classList) {
-                if (c.contains("num") && c.contains("date")) continue;
+                if (c.contains("num") || c.contains("date")) continue;
                 if (c.contains("tit")) title = c;
-                else if (c.contains("link") || c.contains("left")) titTmp = c;
+                //System.out.println();
             }
-            if (title.equals("")) title = titTmp;
+            if (title.equals(""))
+                for(String c: classList){
+                    if (c.contains("num") || c.contains("date")) continue;
+                    if(c.contains("link") || c.contains("left") || c.contains("sbj") || c.contains("subject")) title = c;
+                }
             titClass = title;
-        }
-
-        int elemLen = 0;
-        if (Objects.equals(titClass, "")) {
-            for (int i = 0; i < classList.size(); i++) {
-                List<Element> t;
-                try {
-                    t = doc.getElementsByClass(classList.get(i));
-                } catch (Exception e) {
-                    classList.remove(i);
-                    continue;
-                }
-                String randElem = t.get(5).text();   // 무작위 post 뽑아서
-                //randElem = randElem.replaceAll(" ", "").replaceAll("\n", "");
-
-                if (elemLen < randElem.length() && !isDigit(randElem)) {
-                    titTmp = classList.get(i);
-                    elemLen = randElem.length();
-                }
-            }
-            if (Objects.equals(titClass, "")) titClass = titTmp;
-            //System.out.println("num class (manual): " + numClass);
         }
         return titClass;
     }
@@ -513,6 +500,59 @@ public class BoardEditor {
         return result;
     }
 
+    // 게시글 상단의 공지로 고정되어 있는 게시글 제거
+    public List<String> withoutNoticeTitList(List<String> titList, List<String> numList){
+        List<String> titListWithoutNotice = new ArrayList<>();
+//        System.out.println(titList);
+//        System.out.println(numList);
+        if(titList.size() == numList.size()){
+            for(int i = 0;i<titList.size();i++)
+                if(isDigit(numList.get(i)))
+                    titListWithoutNotice.add(titList.get(i));
+        }
+        else{
+            for(int i = 0;i<titList.size();i++)
+                if(i >= titList.size() - numList.size())
+                    titListWithoutNotice.add(titList.get(i));
+        }
+        return titListWithoutNotice;
+    }
+
+    public void setSSL() throws NoSuchAlgorithmException, KeyManagementException {
+        // TODO Auto-generated method stub
+        // TODO Auto-generated method stub
+        // TODO Auto-generated method stub
+        TrustManager[] trustAllCerts = new TrustManager[] {
+                new X509TrustManager() {
+                    @Override
+                    public X509Certificate[] getAcceptedIssuers() {
+                        // TODO Auto-generated method stub
+                        return null;
+                    }
+                    @Override
+                    public void checkClientTrusted(X509Certificate[] chain, String authType)
+                            throws CertificateException {
+                        // TODO Auto-generated method stub
+
+                    }
+                    @Override
+                    public void checkServerTrusted(X509Certificate[] chain, String authType)
+                            throws CertificateException {
+                        // TODO Auto-generated method stub
+                    }
+                }
+        };
+        SSLContext sc = SSLContext.getInstance("SSL");
+        sc.init(null, trustAllCerts, new SecureRandom());
+        HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+            @Override
+            public boolean verify(String hostname, SSLSession session) {
+                return true;
+            }
+        });
+        HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+    }
+
     public int getLevenshteinDistance(String X, String Y) {
         int m = X.length();
         int n = Y.length();
@@ -541,7 +581,6 @@ public class BoardEditor {
         }
         return 1.0;
     }
-
     public boolean isDigit(String n) {
         boolean answer = false;
         int i;
@@ -554,10 +593,7 @@ public class BoardEditor {
     public int countStr(String src, String str){
         Matcher match = Pattern.compile(str).matcher(src);
         int i = 0;
-        while(match.find()){
-            i+=1;
-            match.group();
-        }
+        while(match.find()) i+=1;
         return i;
     }
     public int maxCount(List<String> str){
