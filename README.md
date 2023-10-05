@@ -7,6 +7,7 @@
 
 # Use
 ![start](https://github.com/IhnoH/NewPostAlarmBot/assets/26521439/10890fe3-ff7b-4571-bff2-355d8fe60930)
+
 Type '/start' and Copy and paste the URL address you want to be notified
 
 # Development Environment
