@@ -16,5 +16,6 @@
 
 # Development Environment
 - Spring Boot
+- Telegram Bot
 - PostgreSQL
 - CloudType
