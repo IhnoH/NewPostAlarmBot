@@ -8,6 +8,7 @@
 # Use
 ![start](https://github.com/IhnoH/NewPostAlarmBot/assets/26521439/10890fe3-ff7b-4571-bff2-355d8fe60930)
 - '/start'를 입력하고 알림받기를 원하는 주소를 복사, 붙여넣기
+- 혹은 'URL keyword' 형식으로 입력하면 키워드를 포함하는 게시글만 알림받을 수 있다.
 
 ![주소목록](https://github.com/IhnoH/NewPostAlarmBot/assets/26521439/fc263639-28c4-4e88-bc39-39aca237289b)
 - 알림받고 있는 주소 목록을 누르면 입력된 주소 목록이 나온다
